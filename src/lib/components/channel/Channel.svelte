@@ -195,7 +195,7 @@
 </script>
 
 <svelte:head>
-	<title>#{channel?.name ?? 'Channel'} | Open WebUI</title>
+	<title>#{channel?.name ?? 'Channel'} | BullBillion AI</title>
 </svelte:head>
 
 <div
@@ -246,7 +246,7 @@
 				{/if}
 			</div>
 
-			<div class=" pb-[1rem]">
+			<div class=" pb-[1rem] flex flex-col justify-center items-center">
 				<MessageInput
 					id="root"
 					{typingUsers}

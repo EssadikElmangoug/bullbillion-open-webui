@@ -18,6 +18,8 @@ from typing import Optional
 from aiocache import cached
 import aiohttp
 import requests
+from datetime import datetime, timedelta
+import secrets
 
 
 from fastapi import (
@@ -321,6 +323,8 @@ from open_webui.utils.oauth import oauth_manager
 from open_webui.utils.security_headers import SecurityHeadersMiddleware
 
 from open_webui.tasks import stop_task, list_tasks  # Import from tasks.py
+
+
 
 if SAFE_MODE:
     print("SAFE MODE ENABLED")
@@ -786,7 +790,7 @@ async def inspect_websocket(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ALLOW_ORIGIN,
+    allow_origins=["http://204.12.203.155:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -1069,7 +1073,7 @@ async def get_app_config(request: Request):
     return {
         **({"onboarding": True} if onboarding else {}),
         "status": True,
-        "name": WEBUI_NAME,
+        "name": "BullBillion | Powered by AI. Supported by Human Experts.",
         "version": VERSION,
         "default_locale": str(DEFAULT_LOCALE),
         "oauth": {
@@ -1298,3 +1302,99 @@ else:
     log.warning(
         f"Frontend build directory not found at '{FRONTEND_BUILD_DIR}'. Serving API only."
     )
+
+
+# @app.post("/api/admin/run-migration")
+# async def run_migration():
+#     from open_webui.migrations.add_is_verified_column import migrate
+#     migrate()
+#     return {"message": "Migration completed successfully"}
+
+# Add these configuration variables near other config variables
+# MAILGUN_API_KEY = os.getenv("MAILGUN_API_KEY")
+# MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN")
+# MAILGUN_FROM_EMAIL = os.getenv("MAILGUN_FROM_EMAIL", "noreply@yourdomain.com")
+# Add these configuration variables near other config variables
+MAILGUN_API_KEY = "0d5494dae3701e820ee832bd623c8cc9-ac3d5f74-429182dd"
+MAILGUN_DOMAIN = "www.bullbillion.com"
+MAILGUN_FROM_EMAIL = "support@bullbillion.com"
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+
+def send_simple_message(email):
+  	return requests.post(
+  		f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
+  		auth=("api", MAILGUN_API_KEY),
+  		data={"from": f"BullBillion <{MAILGUN_FROM_EMAIL}>",
+			"to": email,
+  			"subject": "Hello Bull Billion",
+  			"text": "Congratulations Bull Billion, you just sent an email with Mailgun! You are truly awesome!"})
+
+@app.post("/api/auth/reset-password")
+async def request_password_reset(request: ResetPasswordRequest):
+    # response = send_simple_message(request.email)
+    # print(response.json())
+    # return {'message': 'Email sent successfully'}
+    user = Users.get_user_by_email(request.email)
+    if not user:
+        # Return success even if email doesn't exist to prevent email enumeration
+        return {"message": "This email is not associated with an account."}
+    
+    # Generate reset token
+    reset_token = secrets.token_urlsafe(32)
+    expiry = datetime.utcnow() + timedelta(hours=24)
+    
+    # Store reset token in database
+    user.reset_token = reset_token
+    user.reset_token_expires = expiry
+    Session.commit()
+    
+    # Send email using Mailgun
+    reset_url = f"{app.state.config.WEBUI_URL}/auth/reset-password?token={reset_token}"
+    
+    try:
+        response = requests.post(
+            f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
+            auth=("api", MAILGUN_API_KEY),
+            data={
+                "from": MAILGUN_FROM_EMAIL,
+                "to": request.email,
+                "subject": "Password Reset Request",
+                "text": f"""
+                You requested to reset your password.
+                
+                Click the following link to reset your password:
+                {reset_url}
+                
+                This link will expire in 24 hours.
+                
+                If you didn't request this, please ignore this email.
+                """
+            }
+        )
+        response.raise_for_status()
+        return {"message": "If an account exists with this email, you will receive password reset instructions."}
+    except Exception as e:
+        log.error(f"Failed to send reset email: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send reset email"
+        )
+
+# @app.post("/api/auth/reset-password/confirm")
+# async def confirm_password_reset(token: str, new_password: str):
+#     user = Users.get_user_by_reset_token(token)
+#     if not user or user.reset_token_expires < datetime.utcnow():
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="Invalid or expired reset token"
+#         )
+    
+#     # Update password
+#     user.password = Users.hash_password(new_password)
+#     user.reset_token = None
+#     user.reset_token_expires = None
+#     Session.commit()
+    
+#     return {"message": "Password successfully reset"}
