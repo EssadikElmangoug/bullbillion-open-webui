@@ -87,6 +87,7 @@
 	import Spinner from '../common/Spinner.svelte';
 
 	export let chatIdProp = '';
+	export let userType = null;
 
 	let loading = false;
 
@@ -1218,6 +1219,10 @@
 	//////////////////////////
 
 	const submitPrompt = async (userPrompt, { _raw = false } = {}) => {
+		if (userType === 'guest') {
+			toast.error($i18n.t('Please login to continue'));
+			return;
+		}
 		console.log('submitPrompt', userPrompt, $chatId);
 
 		const messages = createMessagesList(history, history.currentId);
@@ -1900,8 +1905,17 @@
 			/>
 		{/if}
 
-		<Navbar
-			bind:this={navbarElement}
+		{#if userType === 'guest'}
+		<div class="flex items-center justify-between w-full p-2 flex-col sm:flex-row gap-2 sm:gap-4">
+			<h1 class="font-bold text-2xl text-nowrap">BullBillion AI</h1>
+			<div class="flex items-center justify-end w-full sm:w-auto gap-2 sm:gap-4">
+				<a href="/auth" target="_blank" class="w-full sm:w-auto text-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">Login</a>
+				<a href="/auth" target="_blank" class="w-full sm:w-auto text-center px-4 py-2 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">Signup</a>
+			</div>
+		</div>
+		{:else}
+			<Navbar
+				bind:this={navbarElement}
 			chat={{
 				id: $chatId,
 				chat: {
@@ -1917,7 +1931,8 @@
 			bind:selectedModels
 			shareEnabled={!!history.currentId}
 			{initNewChat}
-		/>
+			/>
+		{/if}
 
 		<PaneGroup direction="horizontal" class="w-full h-full">
 			<Pane defaultSize={50} class="h-full flex w-full relative">
@@ -1978,8 +1993,9 @@
 							</div>
 						</div>
 
-						<div class=" pb-[1rem]">
+						<div class=" pb-[2rem]">
 							<MessageInput
+								userType={userType}
 								{history}
 								{selectedModels}
 								bind:files
@@ -2024,9 +2040,9 @@
 							/>
 
 							<div
-								class="absolute bottom-1 text-xs text-gray-500 text-center line-clamp-1 right-0 left-0"
+								class="absolute bottom-2 text-xs text-gray-500 text-center line-clamp-1 right-0 left-0"
 							>
-								<!-- {$i18n.t('LLMs can make mistakes. Verify important information.')} -->
+								{$i18n.t('BullBillion can make mistakes. Verify important information.')}
 							</div>
 						</div>
 					{:else}

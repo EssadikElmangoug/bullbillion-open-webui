@@ -107,9 +107,9 @@ for source in log_sources:
 log.setLevel(SRC_LOG_LEVELS["CONFIG"])
 
 
-WEBUI_NAME = os.environ.get("WEBUI_NAME", "Open WebUI")
-if WEBUI_NAME != "Open WebUI":
-    WEBUI_NAME += " (Open WebUI)"
+WEBUI_NAME = os.environ.get("WEBUI_NAME", "BullBillion | Powered by AI | Supported by Human Experts.")
+if WEBUI_NAME != "BullBillion | Powered by AI | Supported by Human Experts.":
+    WEBUI_NAME += " (BullBillion AI)"
 
 WEBUI_FAVICON_URL = "https://openwebui.com/favicon.png"
 
@@ -274,6 +274,8 @@ DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{DATA_DIR}/webui.db")
 # Replace the postgres:// with postgresql://
 if "postgres://" in DATABASE_URL:
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://")
+
+print("DATABASE_URL:", DATABASE_URL)
 
 DATABASE_SCHEMA = os.environ.get("DATABASE_SCHEMA", None)
 

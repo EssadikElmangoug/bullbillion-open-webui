@@ -296,7 +296,7 @@ JWT_EXPIRES_IN = PersistentConfig(
 ENABLE_OAUTH_SIGNUP = PersistentConfig(
     "ENABLE_OAUTH_SIGNUP",
     "oauth.enable_signup",
-    os.environ.get("ENABLE_OAUTH_SIGNUP", "False").lower() == "true",
+    os.environ.get("ENABLE_OAUTH_SIGNUP", "True").lower() == "true",
 )
 
 OAUTH_MERGE_ACCOUNTS_BY_EMAIL = PersistentConfig(
@@ -310,13 +310,13 @@ OAUTH_PROVIDERS = {}
 GOOGLE_CLIENT_ID = PersistentConfig(
     "GOOGLE_CLIENT_ID",
     "oauth.google.client_id",
-    os.environ.get("GOOGLE_CLIENT_ID", ""),
+    os.environ.get("GOOGLE_CLIENT_ID", "967124825668-gjchee0l4g9mg4c1e5000c76l6j0k8vc.apps.googleusercontent.com"),
 )
 
 GOOGLE_CLIENT_SECRET = PersistentConfig(
     "GOOGLE_CLIENT_SECRET",
     "oauth.google.client_secret",
-    os.environ.get("GOOGLE_CLIENT_SECRET", ""),
+    os.environ.get("GOOGLE_CLIENT_SECRET", "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"),
 )
 
 
@@ -329,7 +329,7 @@ GOOGLE_OAUTH_SCOPE = PersistentConfig(
 GOOGLE_REDIRECT_URI = PersistentConfig(
     "GOOGLE_REDIRECT_URI",
     "oauth.google.redirect_uri",
-    os.environ.get("GOOGLE_REDIRECT_URI", ""),
+    os.environ.get("GOOGLE_REDIRECT_URI", "https://bullbillion.com/oauth/google/callback"),
 )
 
 MICROSOFT_CLIENT_ID = PersistentConfig(
@@ -831,7 +831,7 @@ ENABLE_SIGNUP = PersistentConfig(
 ENABLE_LOGIN_FORM = PersistentConfig(
     "ENABLE_LOGIN_FORM",
     "ui.ENABLE_LOGIN_FORM",
-    os.environ.get("ENABLE_LOGIN_FORM", "True").lower() == "true",
+    os.environ.get("ENABLE_LOGIN_FORM", "False").lower() == "false",
 )
 
 

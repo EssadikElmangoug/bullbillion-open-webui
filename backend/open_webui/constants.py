@@ -103,6 +103,8 @@ class ERROR_MESSAGES(str, Enum):
     )
     FILE_NOT_PROCESSED = "Extracted content is not available for this file. Please ensure that the file is processed before proceeding."
 
+    EMAIL_NOT_VERIFIED = "Please verify your email address before signing in"
+
 
 class TASKS(str, Enum):
     def __str__(self) -> str:

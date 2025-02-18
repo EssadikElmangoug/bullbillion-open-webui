@@ -88,6 +88,7 @@
 								let stream = await navigator.mediaDevices
 									.getUserMedia({ audio: true })
 									.catch(function (err) {
+										console.log('Error recording voice:', err);
 										toast.error(
 											$i18n.t(`Permission denied when accessing microphone: {{error}}`, {
 												error: err
@@ -102,7 +103,8 @@
 									tracks.forEach((track) => track.stop());
 								}
 								stream = null;
-							} catch {
+							} catch (err) {
+								console.log('Error recording voice:', err);
 								toast.error($i18n.t('Permission denied when accessing microphone'));
 							}
 						}}

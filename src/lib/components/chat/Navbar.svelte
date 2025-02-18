@@ -39,6 +39,11 @@
 
 	let showShareChatModal = false;
 	let showDownloadChatModal = false;
+
+	// Update title when route changes
+	$: if ($page.url.pathname === '/') {
+		title = 'New Chat';
+	}
 </script>
 
 <ShareChatModal bind:show={showShareChatModal} chatId={$chatId} />
@@ -57,7 +62,7 @@
 			>
 				<button
 					id="sidebar-toggle-button"
-					class="cursor-pointer px-2 py-2 flex rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+					class="cursor-pointer px-2 py-2 flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition"
 					on:click={() => {
 						showSidebar.set(!$showSidebar);
 					}}
@@ -66,128 +71,46 @@
 					<div class=" m-auto self-center">
 						<MenuLines />
 					</div>
+					
 				</button>
+				<a
+					id="sidebar-new-chat-button"
+					class="flex justify-between items-center flex-1 rounded-xl px-2 py-2 h-full text-right hover:bg-gray-100 dark:hover:bg-gray-800 transition no-drag-region"
+					href="/"
+						draggable="false"
+						on:click={async () => {
+							selectedChatId = null;
+							await goto('/');
+							const newChatButton = document.getElementById('new-chat-button');
+							setTimeout(() => {
+								newChatButton?.click();
+								if ($mobile) {
+									showSidebar.set(false);
+								}
+							}, 0);
+						}}
+					>
+						<PencilSquare />
+				</a>
 			</div>
 
 			<div
-				class="flex-1 overflow-hidden max-w-full py-0.5
-			{$showSidebar ? 'ml-1' : ''}
-			"
+				class="flex-1 overflow-hidden max-w-full py-0.5"
 			>
-				{#if showModelSelector}
+				<!-- {#if showModelSelector}
 					<ModelSelector bind:selectedModels showSetDefault={!shareEnabled} />
-				{/if}
+				{/if} -->
+				<h1 class="font-bold text-2xl ml-1">BullBillion AI</h1>
 			</div>
 
-			<div class="self-start flex flex-none items-center text-gray-600 dark:text-gray-400">
-				<!-- <div class="md:hidden flex self-center w-[1px] h-5 mx-2 bg-gray-300 dark:bg-stone-700" /> -->
-				{#if shareEnabled && chat && (chat.id || $temporaryChatEnabled)}
-					<Menu
-						{chat}
-						{shareEnabled}
-						shareHandler={() => {
-							showShareChatModal = !showShareChatModal;
-						}}
-						downloadHandler={() => {
-							showDownloadChatModal = !showDownloadChatModal;
-						}}
-					>
-						<button
-							class="flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
-							id="chat-context-menu-button"
-						>
-							<div class=" m-auto self-center">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke-width="1.5"
-									stroke="currentColor"
-									class="size-5"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-									/>
-								</svg>
-							</div>
-						</button>
-					</Menu>
-				{:else if $mobile && ($user.role === 'admin' || $user?.permissions?.chat?.controls)}
-					<Tooltip content={$i18n.t('Controls')}>
-						<button
-							class=" flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
-							on:click={async () => {
-								await showControls.set(!$showControls);
-							}}
-							aria-label="Controls"
-						>
-							<div class=" m-auto self-center">
-								<AdjustmentsHorizontal className=" size-5" strokeWidth="0.5" />
-							</div>
-						</button>
-					</Tooltip>
-				{/if}
-
-				{#if !$mobile && ($user.role === 'admin' || $user?.permissions?.chat?.controls)}
-					<Tooltip content={$i18n.t('Controls')}>
-						<button
-							class=" flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
-							on:click={async () => {
-								await showControls.set(!$showControls);
-							}}
-							aria-label="Controls"
-						>
-							<div class=" m-auto self-center">
-								<AdjustmentsHorizontal className=" size-5" strokeWidth="0.5" />
-							</div>
-						</button>
-					</Tooltip>
-				{/if}
-
-				<Tooltip content={$i18n.t('New Chat')}>
-					<button
-						id="new-chat-button"
-						class=" flex {$showSidebar
-							? 'md:hidden'
-							: ''} cursor-pointer px-2 py-2 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-850 transition"
-						on:click={() => {
-							initNewChat();
-						}}
-						aria-label="New Chat"
-					>
-						<div class=" m-auto self-center">
-							<PencilSquare className=" size-5" strokeWidth="2" />
-						</div>
-					</button>
-				</Tooltip>
-
-				{#if $user !== undefined}
-					<UserMenu
-						className="max-w-[200px]"
-						role={$user.role}
-						on:show={(e) => {
-							if (e.detail === 'archived-chat') {
-								showArchivedChats.set(true);
-							}
-						}}
-					>
-						<button
-							class="select-none flex rounded-xl p-1.5 w-full hover:bg-gray-50 dark:hover:bg-gray-850 transition"
-							aria-label="User Menu"
-						>
-							<div class=" self-center">
-								<img
-									src={$user.profile_image_url}
-									class="size-6 object-cover rounded-full"
-									alt="User profile"
-									draggable="false"
-								/>
-							</div>
-						</button>
-					</UserMenu>
-				{/if}
+			<div class="absolute left-1/2 transform -translate-x-1/2 w-96 max-w-[calc(100%-200px)]">
+				<input
+					type="text"
+					bind:value={title}
+					class="w-full text-center bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg font-medium text-gray-800 dark:text-gray-200 transition-all"
+					placeholder="Chat Title"
+					readonly
+				/>
 			</div>
 		</div>
 	</div>

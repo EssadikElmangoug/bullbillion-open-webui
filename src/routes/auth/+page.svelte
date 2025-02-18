@@ -147,7 +147,7 @@
 				<div class=" self-center">
 					<img
 						crossorigin="anonymous"
-						src="{WEBUI_BASE_URL}/static/splash.png"
+						src="{WEBUI_BASE_URL}/static/bullbillion.png"
 						class=" w-6 rounded-full dark:invert"
 						alt="logo"
 					/>
@@ -165,7 +165,7 @@
 							class="flex items-center justify-center gap-3 text-xl sm:text-2xl text-center font-semibold dark:text-gray-200"
 						>
 							<div>
-								{$i18n.t('Signing in to {{WEBUI_NAME}}', { WEBUI_NAME: $WEBUI_NAME })}
+								{$i18n.t('Signing in to BullBillion AI')}
 							</div>
 
 							<div>
@@ -185,13 +185,13 @@
 							<div class="mb-1">
 								<div class=" text-2xl font-medium">
 									{#if $config?.onboarding ?? false}
-										{$i18n.t(`Get started with {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
+										{$i18n.t(`Get started with BullBillion AI`)}
 									{:else if mode === 'ldap'}
-										{$i18n.t(`Sign in to {{WEBUI_NAME}} with LDAP`, { WEBUI_NAME: $WEBUI_NAME })}
+										{$i18n.t(`Sign in to BullBillion AI`)}
 									{:else if mode === 'signin'}
-										{$i18n.t(`Sign in to {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
+										{$i18n.t(`Sign in to BullBillion AI`)}
 									{:else}
-										{$i18n.t(`Sign up to {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
+										{$i18n.t(`Sign up to BullBillion AI`)}
 									{/if}
 								</div>
 
@@ -261,6 +261,17 @@
 											name="current-password"
 											required
 										/>
+										
+										{#if mode === 'signin'}
+											<div class="text-right mt-1">
+												<a 
+													href="/auth/reset-password"
+													class="text-xs text-gray-600 dark:text-gray-400 hover:underline"
+												>
+													{$i18n.t('Forgot Password?')}
+												</a>
+											</div>
+										{/if}
 									</div>
 								</div>
 							{/if}
