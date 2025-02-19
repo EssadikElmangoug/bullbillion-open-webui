@@ -54,10 +54,34 @@ from ssl import CERT_REQUIRED, PROTOCOL_TLS
 from ldap3 import Server, Connection, NONE, Tls
 from ldap3.utils.conv import escape_filter_chars
 
+from pymongo import MongoClient
+from datetime import datetime, timedelta
+
 router = APIRouter()
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MAIN"])
+
+# MongoDB Configuration
+MONGODB_URI = "mongodb://localhost:27017/"  # Update with your MongoDB URI
+MONGODB_DB_NAME = "bullbillion"
+
+try:
+    mongo_client = MongoClient(MONGODB_URI)
+    db = mongo_client[MONGODB_DB_NAME]
+    print("MongoDB connection successful")
+except Exception as e:
+    print(f"MongoDB connection error: {e}")
+    raise
+
+users_collection = db.users
+users_collection.create_index("email", unique=True)
+
+def create_user(email):
+    return users_collection.insert_one({
+        "email": email,
+        "created_at": datetime.now(),
+    })
 
 ############################
 # GetSessionUser
@@ -459,6 +483,9 @@ async def signup(request: Request, response: Response, form_data: SignupForm):
         )
 
         if user:
+            # Add the user to MongoDB
+            create_user(form_data.email.lower())
+
             expires_delta = parse_duration(request.app.state.config.JWT_EXPIRES_IN)
             expires_at = None
             if expires_delta:
