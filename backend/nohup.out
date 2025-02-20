@@ -1,0 +1,307 @@
+INFO:     Will watch for changes in these directories: ['/home/administrator/open-webui/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+INFO:     Started reloader process [3017562] using WatchFiles
+/home/administrator/open-webui/backend/open_webui
+/home/administrator/open-webui/backend
+/home/administrator/open-webui
+DATABASE_URL: sqlite:////home/administrator/open-webui/backend/data/webui.db
+Running migrations
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [open_webui.env] 'ENABLE_API_KEY' loaded from the latest database entry
+INFO  [open_webui.env] 'ENABLE_API_KEY_ENDPOINT_RESTRICTIONS' loaded from the latest database entry
+INFO  [open_webui.env] 'API_KEY_ALLOWED_ENDPOINTS' loaded from the latest database entry
+INFO  [open_webui.env] 'JWT_EXPIRES_IN' loaded from the latest database entry
+INFO  [open_webui.env] 'WEBUI_URL' loaded from the latest database entry
+INFO  [open_webui.env] 'ENABLE_SIGNUP' loaded from the latest database entry
+INFO  [open_webui.env] 'DEFAULT_LOCALE' loaded from the latest database entry
+INFO  [open_webui.env] 'DEFAULT_PROMPT_SUGGESTIONS' loaded from the latest database entry
+INFO  [open_webui.env] 'DEFAULT_USER_ROLE' loaded from the latest database entry
+INFO  [open_webui.env] 'ENABLE_CHANNELS' loaded from the latest database entry
+INFO  [open_webui.env] 'WEBHOOK_URL' loaded from the latest database entry
+INFO  [open_webui.env] 'ENABLE_COMMUNITY_SHARING' loaded from the latest database entry
+INFO  [open_webui.env] 'ENABLE_MESSAGE_RATING' loaded from the latest database entry
+WARNI [open_webui.env] 
+
+WARNING: CORS_ALLOW_ORIGIN IS SET TO '*' - NOT RECOMMENDED FOR PRODUCTION DEPLOYMENTS.
+
+INFO  [open_webui.env] 'SHOW_ADMIN_DETAILS' loaded from the latest database entry
+INFO  [open_webui.env] Embedding model set: sentence-transformers/all-MiniLM-L6-v2
+/home/administrator/open-webui/backend/venv/lib/python3.12/site-packages/pydub/utils.py:170: RuntimeWarning: Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work
+  warn("Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work", RuntimeWarning)
+WARNI [langchain_community.utils.user_agent] USER_AGENT environment variable not set, consider setting it to identify your requests.
+MongoDB connection successful
+MongoDB connection successful
+
+  ___                    __        __   _     _   _ ___
+ / _ \ _ __   ___ _ __   \ \      / /__| |__ | | | |_ _|
+| | | | '_ \ / _ \ '_ \   \ \ /\ / / _ \ '_ \| | | || |
+| |_| | |_) |  __/ | | |   \ V  V /  __/ |_) | |_| || |
+ \___/| .__/ \___|_| |_|    \_/\_/ \___|_.__/ \___/|___|
+      |_|
+
+
+v0.5.12 - building the best open-source AI user interface.
+
+https://github.com/open-webui/open-webui
+
+Fetching 30 files:   0%|          | 0/30 [00:00<?, ?it/s]Fetching 30 files: 100%|██████████| 30/30 [00:00<00:00, 177474.08it/s]
+INFO:     Started server process [3017565]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     105.74.65.62:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/auths/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/changelog HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO  [open_webui.routers.openai] get_all_models()
+INFO  [open_webui.routers.ollama] get_all_models()
+INFO:     105.74.65.62:0 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/configs/banners HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/tools/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/channels/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/chats/all/tags HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/chats/pinned HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/folders/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/chats/?page=1 HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/chats/?page=2 HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/auths/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/changelog HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO  [open_webui.routers.openai] get_all_models()
+INFO  [open_webui.routers.ollama] get_all_models()
+INFO:     105.74.65.62:0 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/configs/banners HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/tools/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/channels/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/chats/all/tags HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/chats/pinned HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/folders/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/chats/?page=1 HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/chats/?page=2 HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/auths/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/changelog HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO  [open_webui.routers.openai] get_all_models()
+INFO  [open_webui.routers.ollama] get_all_models()
+INFO:     105.74.65.62:0 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/configs/banners HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/tools/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/channels/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/chats/all/tags HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/chats/pinned HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/folders/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/chats/?page=1 HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/chats/?page=2 HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/auths/signout HTTP/1.1" 500 Internal Server Error
+INFO:     105.74.65.62:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/changelog HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/tools/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/users/user/settings HTTP/1.1" 401 Unauthorized
+INFO:     105.74.65.62:0 - "GET /api/v1/tools/ HTTP/1.1" 200 OK
+INFO:     105.74.65.62:0 - "GET /api/v1/tools/ HTTP/1.1" 200 OK
+INFO:     193.68.89.51:37320 - "GET / HTTP/1.1" 200 OK
+INFO:     193.68.89.51:58546 - "GET / HTTP/1.1" 200 OK
+INFO:     92.255.57.58:51532 - "GET /?XDEBUG_SESSION_START=phpstorm HTTP/1.1" 200 OK
+INFO:     92.255.57.58:43642 - "GET /actuator/gateway/routes HTTP/1.1" 200 OK
+INFO:     193.68.89.51:48144 - "GET / HTTP/1.1" 200 OK
+INFO:     193.68.89.10:38982 - "GET / HTTP/1.1" 200 OK
+INFO:     20.57.46.172:0 - "POST /api/chat/completions HTTP/1.1" 401 Unauthorized
+INFO:     207.90.244.11:43860 - "GET / HTTP/1.1" 200 OK
+INFO:     207.90.244.11:48864 - "GET /static/bullbillion.png HTTP/1.1" 200 OK
+INFO:     193.68.89.51:43434 - "GET / HTTP/1.1" 200 OK
+INFO:     178.62.216.207:39854 - "GET / HTTP/1.1" 200 OK
+INFO:     193.68.89.51:34932 - "GET / HTTP/1.1" 200 OK
+WARNING:  Invalid HTTP request received.
+INFO:     193.68.89.10:36114 - "GET / HTTP/1.1" 200 OK
+INFO:     198.235.24.45:61870 - "GET / HTTP/1.1" 200 OK
+INFO:     194.120.230.215:37770 - "GET / HTTP/1.1" 200 OK
+INFO:     52.160.166.206:0 - "POST /api/chat/completions HTTP/1.1" 401 Unauthorized
+INFO:     193.68.89.51:44660 - "GET / HTTP/1.1" 200 OK
+INFO:     78.108.177.54:37974 - "GET / HTTP/1.0" 200 OK
+INFO:     193.68.89.51:48184 - "GET / HTTP/1.1" 200 OK
+INFO:     193.68.89.10:52366 - "GET / HTTP/1.1" 200 OK
+INFO:     193.68.89.51:52382 - "GET / HTTP/1.1" 200 OK
+INFO:     193.68.89.51:52378 - "GET / HTTP/1.1" 200 OK
+INFO:     52.234.43.149:0 - "POST /api/chat/completions HTTP/1.1" 401 Unauthorized
+INFO:     193.68.89.10:49642 - "GET / HTTP/1.1" 200 OK
+INFO:     5.224.150.68:43589 - "GET / HTTP/1.0" 200 OK
+INFO:     216.218.206.106:6501 - "GET / HTTP/1.1" 200 OK
+INFO:     20.171.127.66:0 - "POST /api/chat/completions HTTP/1.1" 401 Unauthorized
+INFO:     216.218.206.78:60433 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     216.218.206.118:53737 - "GET /?format=json HTTP/1.1" 200 OK
+WARNING:  Invalid HTTP request received.
+INFO:     216.218.206.86:19671 - "GET /geoserver/web/ HTTP/1.1" 200 OK
+INFO:     39.51.25.26:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     39.51.25.26:0 - "GET /api/changelog HTTP/1.1" 200 OK
+INFO:     39.51.25.26:0 - "GET /api/v1/tools/ HTTP/1.1" 403 Forbidden
+INFO:     39.51.25.26:0 - "GET /api/v1/tools/ HTTP/1.1" 403 Forbidden
+INFO:     39.51.25.26:0 - "GET /api/v1/tools/ HTTP/1.1" 403 Forbidden
+INFO:     39.51.25.26:0 - "GET /api/v1/users/user/settings HTTP/1.1" 401 Unauthorized
+INFO:     39.51.25.26:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     39.51.25.26:0 - "POST /api/auth/reset-password HTTP/1.1" 405 Method Not Allowed
+INFO:     20.171.127.66:0 - "POST /api/chat/completions HTTP/1.1" 401 Unauthorized
+INFO:     193.68.89.51:59650 - "GET / HTTP/1.1" 200 OK
+INFO:     20.171.127.66:0 - "POST /api/chat/completions HTTP/1.1" 401 Unauthorized
+INFO:     20.42.50.133:0 - "POST /api/chat/completions HTTP/1.1" 401 Unauthorized
+INFO:     187.102.223.189:38696 - "GET / HTTP/1.1" 200 OK
+INFO:     193.68.89.51:35230 - "GET / HTTP/1.1" 200 OK
+INFO:     193.68.89.10:53586 - "GET / HTTP/1.1" 200 OK
+INFO:     193.68.89.51:37438 - "GET / HTTP/1.1" 200 OK
+INFO:     193.68.89.51:34290 - "GET / HTTP/1.1" 200 OK
+INFO:     172.183.215.128:0 - "POST /api/chat/completions HTTP/1.1" 401 Unauthorized
+INFO:     39.51.25.26:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     39.51.25.26:0 - "GET /api/v1/tools/ HTTP/1.1" 403 Forbidden
+INFO:     39.51.25.26:0 - "GET /api/v1/tools/ HTTP/1.1" 403 Forbidden
+INFO:     39.51.25.26:0 - "GET /api/changelog HTTP/1.1" 200 OK
+INFO:     39.51.25.26:0 - "GET /api/v1/tools/ HTTP/1.1" 403 Forbidden
+INFO:     39.51.25.26:0 - "GET /api/v1/users/user/settings HTTP/1.1" 401 Unauthorized
+INFO:     39.51.25.26:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     39.51.25.26:0 - "POST /api/auth/reset-password HTTP/1.1" 405 Method Not Allowed
+INFO:     39.51.25.26:0 - "POST /api/auth/reset-password HTTP/1.1" 405 Method Not Allowed
+INFO:     39.51.25.26:0 - "GET /oauth/google/login HTTP/1.1" 302 Found
+INFO:     105.67.5.14:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/auths/ HTTP/1.1" 401 Unauthorized
+INFO:     105.67.5.14:0 - "GET /oauth/google/login HTTP/1.1" 302 Found
+INFO:     105.67.5.14:0 - "GET /oauth/google/callback?state=9iN6fBfzXViOgVwYDlo7Alpdl5r9nF&code=4%2F0ASVgi3KSjLtPEoq3hJ_aBmQCih_PtCxMkNH5d867bu7rbvy0NuSIThwDx-he78kVPh7h8g&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=0&prompt=none HTTP/1.1" 307 Temporary Redirect
+INFO:     105.67.5.14:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/auths/ HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/changelog HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO  [open_webui.routers.openai] get_all_models()
+INFO  [open_webui.routers.ollama] get_all_models()
+INFO:     105.67.5.14:0 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/configs/banners HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/tools/ HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/channels/ HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/chats/all/tags HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/chats/pinned HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/folders/ HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/chats/?page=1 HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/chats/?page=2 HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/auths/signout HTTP/1.1" 500 Internal Server Error
+INFO:     105.67.5.14:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO  [open_webui.models.auths] authenticate_user: test@test.com
+WARNING:  Invalid HTTP request received.
+INFO:     105.67.5.14:0 - "POST /api/v1/auths/signin HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/changelog HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO  [open_webui.routers.openai] get_all_models()
+INFO  [open_webui.routers.ollama] get_all_models()
+INFO:     105.67.5.14:0 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/configs/banners HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/tools/ HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/channels/ HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/version/updates HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/chats/all/tags HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/chats/pinned HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/folders/ HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/chats/?page=1 HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/chats/?page=2 HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/users/ HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/users/ HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/auths/admin/config HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/auths/admin/config/ldap/server HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/webhook HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/auths/admin/config/ldap HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/users/ HTTP/1.1" 200 OK
+INFO:     105.67.5.14:0 - "GET /api/v1/users/ HTTP/1.1" 200 OK
+INFO:     193.68.89.10:50800 - "GET / HTTP/1.1" 200 OK
+INFO:     193.68.89.51:49334 - "GET / HTTP/1.1" 200 OK
+INFO:     8.219.63.135:37472 - "GET / HTTP/1.0" 200 OK
+INFO:     8.219.63.135:37488 - "GET / HTTP/1.1" 200 OK
+INFO:     8.219.63.135:37494 - "GET /static/bullbillion.png HTTP/1.1" 200 OK
+WARNING:  Invalid HTTP request received.
+INFO:     193.68.89.10:35834 - "GET / HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/changelog HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/v1/tools/ HTTP/1.1" 403 Forbidden
+INFO:     41.251.1.77:0 - "GET /api/v1/tools/ HTTP/1.1" 403 Forbidden
+INFO:     41.251.1.77:0 - "GET /api/v1/tools/ HTTP/1.1" 403 Forbidden
+INFO:     41.251.1.77:0 - "GET /api/v1/users/user/settings HTTP/1.1" 401 Unauthorized
+INFO:     41.251.1.77:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /oauth/google/login HTTP/1.1" 302 Found
+INFO:     41.251.1.77:0 - "GET /oauth/google/callback?state=J0DwgUJcxgaHUFpCHDl1eJ77hYei1u&code=4%2F0ASVgi3LZYYYB0_Y0mtkXBQGrQ_ESPWx1kNyOGqJwpyntbLFurGrBZTRRWp3tFRpUj4QQmw&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&authuser=1&prompt=none HTTP/1.1" 307 Temporary Redirect
+INFO:     41.251.1.77:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/v1/auths/ HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/changelog HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO  [open_webui.routers.openai] get_all_models()
+INFO  [open_webui.routers.ollama] get_all_models()
+INFO:     41.251.1.77:0 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/v1/configs/banners HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/v1/tools/ HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/v1/channels/ HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/v1/chats/all/tags HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/v1/chats/pinned HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/v1/chats/?page=1 HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/v1/folders/ HTTP/1.1" 200 OK
+INFO:     41.251.1.77:0 - "GET /api/v1/chats/?page=2 HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63466 - "OPTIONS /api/config HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63467 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63466 - "GET /static/bullbillion.png HTTP/1.1" 304 Not Modified
+INFO:     ('41.251.1.77', 63468) - "WebSocket /ws/socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     41.251.1.77:63466 - "OPTIONS /api/changelog HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63466 - "OPTIONS /api/v1/tools/ HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63469 - "OPTIONS /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63470 - "GET /api/changelog HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63466 - "GET /api/v1/tools/ HTTP/1.1" 403 Forbidden
+INFO:     41.251.1.77:63469 - "GET /api/v1/users/user/settings HTTP/1.1" 401 Unauthorized
+INFO:     41.251.1.77:63466 - "GET /api/v1/tools/ HTTP/1.1" 403 Forbidden
+INFO:     41.251.1.77:63469 - "GET /api/v1/tools/ HTTP/1.1" 403 Forbidden
+INFO:     connection closed
+INFO:     41.251.1.77:63477 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     ('41.251.1.77', 63478) - "WebSocket /ws/socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     41.251.1.77:63481 - "GET /oauth/google/login HTTP/1.1" 302 Found
+WARNI [open_webui.utils.oauth] OAuth callback error: mismatching_state: CSRF Warning! State not equal in request and response.
+INFO:     41.251.1.77:0 - "GET /oauth/google/callback?state=KieH9yWAXxExKeTh1zGzzdh73zxitW&code=4%2F0ASVgi3J4SHRCRlDFiCGWkt89LmiVf4KoJcBcJ3iEx3X5dzEkBrEPA3IbZuIuqJ4U0yam5g&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=1&prompt=none HTTP/1.1" 400 Bad Request
+INFO:     ('41.251.1.77', 63496) - "WebSocket /ws/socket.io/?EIO=4&transport=websocket" [accepted]
+INFO:     connection open
+INFO:     41.251.1.77:63499 - "OPTIONS /api/v1/auths/signin HTTP/1.1" 200 OK
+INFO  [open_webui.models.auths] authenticate_user: test@test.com
+INFO:     41.251.1.77:63500 - "POST /api/v1/auths/signin HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63500 - "GET /api/config HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63511 - "GET /api/changelog HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63512 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63512 - "OPTIONS /api/models HTTP/1.1" 200 OK
+INFO  [open_webui.routers.openai] get_all_models()
+INFO  [open_webui.routers.ollama] get_all_models()
+INFO:     41.251.1.77:63511 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63511 - "OPTIONS /api/v1/configs/banners HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63511 - "GET /api/v1/configs/banners HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63511 - "GET /api/v1/tools/ HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63512 - "OPTIONS /api/v1/channels/ HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63511 - "GET /api/v1/users/user/settings HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63512 - "GET /api/v1/channels/ HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63511 - "OPTIONS /api/v1/chats/all/tags HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63511 - "GET /api/v1/chats/all/tags HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63511 - "OPTIONS /api/v1/chats/pinned HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63511 - "GET /api/v1/chats/pinned HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63511 - "OPTIONS /api/v1/folders/ HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63512 - "OPTIONS /api/v1/chats/?page=1 HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63511 - "GET /api/v1/folders/ HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63512 - "GET /api/v1/chats/?page=1 HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63554 - "GET /api/v1/channels/ HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63554 - "GET /api/v1/chats/all/tags HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63554 - "GET /api/v1/chats/pinned HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63554 - "GET /api/v1/folders/ HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63555 - "GET /api/v1/chats/?page=1 HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63562 - "OPTIONS /api/v1/chats/?page=2 HTTP/1.1" 200 OK
+INFO:     41.251.1.77:63562 - "GET /api/v1/chats/?page=2 HTTP/1.1" 200 OK

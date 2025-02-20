@@ -100,7 +100,7 @@
 				<!-- {#if showModelSelector}
 					<ModelSelector bind:selectedModels showSetDefault={!shareEnabled} />
 				{/if} -->
-				<h1 class="font-bold text-2xl ml-1">BullBillion AI</h1>
+				<h1 class="hidden md:block font-bold text-2xl ml-1">BullBillion AI</h1>
 			</div>
 
 			<div class="absolute left-1/2 transform -translate-x-1/2 w-96 max-w-[calc(100%-200px)]">
