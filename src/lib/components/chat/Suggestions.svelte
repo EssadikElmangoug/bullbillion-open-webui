@@ -74,7 +74,7 @@
 			class="flex w-full text-center items-center justify-center self-start text-gray-400 dark:text-gray-600"
 		>
 		<!-- Footer -->
-			{$WEBUI_NAME}
+			BullBillion can make mistakes. Check important info.
 		</div>
 	{/if}
 </div>

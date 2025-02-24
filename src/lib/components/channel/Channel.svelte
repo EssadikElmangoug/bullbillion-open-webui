@@ -195,7 +195,7 @@
 </script>
 
 <svelte:head>
-	<title>#{channel?.name ?? 'Channel'} | BullBillion AI</title>
+	<title>#{channel?.name ?? 'Channel'} | BullBillion</title>
 </svelte:head>
 
 <div

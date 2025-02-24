@@ -85,7 +85,7 @@
 					{#if models[selectedModelIdx]?.name}
 						{models[selectedModelIdx]?.name}
 					{:else}
-						{$i18n.t('BullBillion AI')}
+						{$i18n.t('BullBillion')}
 					{/if}
 				</div>
 
@@ -116,7 +116,7 @@
 						{/if}
 					{:else}
 						<div class=" font-medium text-gray-400 dark:text-gray-500 line-clamp-1 font-p">
-							{$i18n.t('How can I help you today?')}
+							{$i18n.t('Message BullBillion')}
 						</div>
 					{/if}
 				</div>

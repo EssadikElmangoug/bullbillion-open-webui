@@ -310,7 +310,7 @@ async def speech(request: Request, user=Depends(get_verified_user)):
 
             raise HTTPException(
                 status_code=getattr(r, "status", 500),
-                detail=detail if detail else "Open WebUI: Server Connection Error",
+                detail=detail if detail else "BullBillion: Server Connection Error",
             )
 
     elif request.app.state.config.TTS_ENGINE == "elevenlabs":
@@ -361,7 +361,7 @@ async def speech(request: Request, user=Depends(get_verified_user)):
 
             raise HTTPException(
                 status_code=getattr(r, "status", 500),
-                detail=detail if detail else "Open WebUI: Server Connection Error",
+                detail=detail if detail else "BullBillion: Server Connection Error",
             )
 
     elif request.app.state.config.TTS_ENGINE == "azure":
@@ -414,7 +414,7 @@ async def speech(request: Request, user=Depends(get_verified_user)):
 
             raise HTTPException(
                 status_code=getattr(r, "status", 500),
-                detail=detail if detail else "Open WebUI: Server Connection Error",
+                detail=detail if detail else "BullBillion: Server Connection Error",
             )
 
     elif request.app.state.config.TTS_ENGINE == "transformers":
@@ -524,7 +524,7 @@ def transcribe(request: Request, file_path):
                 except Exception:
                     detail = f"External: {e}"
 
-            raise Exception(detail if detail else "Open WebUI: Server Connection Error")
+            raise Exception(detail if detail else "BullBillion: Server Connection Error")
 
     elif request.app.state.config.STT_ENGINE == "deepgram":
         try:
@@ -587,7 +587,7 @@ def transcribe(request: Request, file_path):
                         detail = f"External: {res['error'].get('message', '')}"
                 except Exception:
                     detail = f"External: {e}"
-            raise Exception(detail if detail else "Open WebUI: Server Connection Error")
+            raise Exception(detail if detail else "BullBillion: Server Connection Error")
 
 
 def compress_audio(file_path):

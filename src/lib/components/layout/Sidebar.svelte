@@ -58,6 +58,7 @@
 	import ChannelItem from './Sidebar/ChannelItem.svelte';
 	import PencilSquare from '../icons/PencilSquare.svelte';
 	import Home from '../icons/Home.svelte';
+	import Modal from '../common/Modal.svelte';
 
 	const BREAKPOINT = 768;
 
@@ -77,6 +78,9 @@
 	let allChatsLoaded = false;
 
 	let folders = {};
+
+	// Add state for controlling modal visibility
+	let showSearchModal = false;
 
 	const initFolders = async () => {
 		const folderList = await getFolders(localStorage.token).catch((error) => {
@@ -446,6 +450,143 @@
 	}}
 />
 
+<Modal 
+	bind:show={showSearchModal}
+	title={$i18n.t('Search')}
+>
+	<div class="px-1.5 flex flex-col justify-between space-x-1 text-gray-600 dark:text-gray-400">
+		<div class="relative {$temporaryChatEnabled ? 'opacity-20' : ''} p-2">
+			{#if $temporaryChatEnabled}
+				<div class="absolute z-40 w-full h-full flex justify-center"></div>
+			{/if}
+
+			<SearchInput
+				bind:value={search}
+				on:input={searchDebounceHandler}
+				placeholder={$i18n.t('Search')}
+			/>
+		</div>
+
+		<div class="border-t border-gray-200 dark:border-gray-800"></div>
+
+		<div
+			class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden {$temporaryChatEnabled
+				? 'opacity-20'
+				: ''}"
+		>
+			{#if $config?.features?.enable_channels && ($user.role === 'admin' || $channels.length > 0) && !search}
+				<Folder
+					className="px-2 mt-0.5"
+					name={$i18n.t('Channels')}
+					dragAndDrop={false}
+					onAdd={async () => {
+						if ($user.role === 'admin') {
+							await tick();
+
+							setTimeout(() => {
+								showCreateChannel = true;
+							}, 0);
+						}
+					}}
+					onAddLabel={$i18n.t('Create Channel')}
+				>
+					{#each $channels as channel}
+						<ChannelItem
+							{channel}
+							onUpdate={async () => {
+								await initChannels();
+							}}
+						/>
+					{/each}
+				</Folder>
+			{/if}
+
+			<div class=" flex-1 flex flex-col overflow-y-auto scrollbar-hidden">
+				<div class="pt-1.5">
+					{#if $chats}
+						{#each $chats as chat, idx}
+							{#if idx === 0 || (idx > 0 && chat.time_range !== $chats[idx - 1].time_range)}
+								<div
+									class="w-full sticky top-0 z-[2]  dark:text-gray-400 text-[#555] font-semibold text-xs leading-[18px] my-1.5 -ml-1.5 px-4 {idx === 0 ? '' : 'pt-5'} pb-1.5"
+								>
+									{$i18n.t(chat.time_range)}
+									<!-- localisation keys for time_range to be recognized from the i18next parser (so they don't get automatically removed):
+									{$i18n.t('Today')}
+									{$i18n.t('Yesterday')}
+									{$i18n.t('Previous 7 days')}
+									{$i18n.t('Previous 30 days')}
+									{$i18n.t('January')}
+									{$i18n.t('February')}
+									{$i18n.t('March')}
+									{$i18n.t('April')}
+									{$i18n.t('May')}
+									{$i18n.t('June')}
+									{$i18n.t('July')}
+									{$i18n.t('August')}
+									{$i18n.t('September')}
+									{$i18n.t('October')}
+									{$i18n.t('November')}
+									{$i18n.t('December')}
+									-->
+								</div>
+							{/if}
+
+							<ChatItem
+								className=""
+								id={chat.id}
+								title={chat.title}
+								{shiftKey}
+								selected={selectedChatId === chat.id}
+								hideOptions={true}
+								on:select={() => {
+									selectedChatId = chat.id;
+									showSearchModal = false;  // Close modal when chat is selected
+								}}
+								on:unselect={() => {
+									selectedChatId = null;
+								}}
+								on:change={async () => {
+									initChatList();
+								}}
+								on:tag={(e) => {
+									const { type, name } = e.detail;
+									tagEventHandler(type, name, chat.id);
+								}}
+							/>
+
+							{#if idx === $chats.length - 1 || $chats[idx + 1]?.time_range !== chat.time_range}
+								<div class="h-[10px]" />
+							{/if}
+						{/each}
+
+						{#if $scrollPaginationEnabled && !allChatsLoaded}
+							<Loader
+								on:visible={(e) => {
+									if (!chatListLoading) {
+										loadMoreChats();
+									}
+								}}
+							>
+								<div
+									class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2"
+								>
+									<Spinner className=" size-4" />
+									<div class=" ">Loading...</div>
+								</div>
+							</Loader>
+						{/if}
+					{:else}
+						<div class="w-full flex justify-center py-1 text-xs animate-pulse items-center gap-2">
+							<Spinner className=" size-4" />
+							<div class=" ">Loading...</div>
+						</div>
+					{/if}
+				</div>
+			</div>
+		</div>
+	</div>
+</Modal>
+
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 
 {#if $showSidebar}
@@ -487,27 +628,26 @@
 				</div>
 			</button>
 
-			<a
-				id="sidebar-new-chat-button"
-				class="w-auto flex justify-end items-center flex-none rounded-lg px-2 py-1 h-full text-right hover:bg-gray-100 dark:hover:bg-gray-800 transition no-drag-region"
-				href="/"
-				draggable="false"
-				on:click={async () => {
-					selectedChatId = null;
-					await goto('/');
-					const newChatButton = document.getElementById('new-chat-button');
-					setTimeout(() => {
-						newChatButton?.click();
-						if ($mobile) {
-							showSidebar.set(false);
-						}
-					}, 0);
-				}}
-			>
-				<div>
-					<PencilSquare className=" size-5" strokeWidth="2" />
-				</div>
-			</a>
+			<div class="flex items-center justify-center gap-2">
+				<button 
+					on:click={() => showSearchModal = true} 
+					class="cursor-pointer w-auto flex justify-end items-center flex-none rounded-lg px-2 py-1 h-full text-right hover:bg-gray-100 dark:hover:bg-gray-800 transition no-drag-region"
+				>
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-xl-heavy"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.75 4.25C7.16015 4.25 4.25 7.16015 4.25 10.75C4.25 14.3399 7.16015 17.25 10.75 17.25C14.3399 17.25 17.25 14.3399 17.25 10.75C17.25 7.16015 14.3399 4.25 10.75 4.25ZM2.25 10.75C2.25 6.05558 6.05558 2.25 10.75 2.25C15.4444 2.25 19.25 6.05558 19.25 10.75C19.25 12.7369 18.5683 14.5645 17.426 16.0118L21.4571 20.0429C21.8476 20.4334 21.8476 21.0666 21.4571 21.4571C21.0666 21.8476 20.4334 21.8476 20.0429 21.4571L16.0118 17.426C14.5645 18.5683 12.7369 19.25 10.75 19.25C6.05558 19.25 2.25 15.4444 2.25 10.75Z" fill="currentColor"></path></svg>
+				</button>
+				<a
+					id="new-chat-button"
+					class=" flex {$showSidebar
+						? 'md:flex'
+						: ''} cursor-pointer px-2 py-2 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+					href="/"
+					aria-label="New Chat"
+				>
+					<div class=" m-auto self-center">
+						<PencilSquare className=" size-5" strokeWidth="2" />
+					</div>
+				</a>
+			</div>
 		</div>
 
 		<!-- {#if $user?.role === 'admin'}
@@ -575,7 +715,7 @@
 			</div>
 		{/if} -->
 
-		<div class="relative {$temporaryChatEnabled ? 'opacity-20' : ''}">
+		<!-- <div class="relative {$temporaryChatEnabled ? 'opacity-20' : ''}">
 			{#if $temporaryChatEnabled}
 				<div class="absolute z-40 w-full h-full flex justify-center"></div>
 			{/if}
@@ -585,7 +725,7 @@
 				on:input={searchDebounceHandler}
 				placeholder={$i18n.t('Search')}
 			/>
-		</div>
+		</div> -->
 
 		<div
 			class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden {$temporaryChatEnabled
@@ -655,8 +795,10 @@
 								title={chat.title}
 								{shiftKey}
 								selected={selectedChatId === chat.id}
+								hideOptions={true}
 								on:select={() => {
 									selectedChatId = chat.id;
+									showSearchModal = false;  // Close modal when chat is selected
 								}}
 								on:unselect={() => {
 									selectedChatId = null;

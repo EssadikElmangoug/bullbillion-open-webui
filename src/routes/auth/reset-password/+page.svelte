@@ -24,12 +24,14 @@
         },
         body: JSON.stringify({ email }),
       });
-
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       message = data.message;
       submitted = true;
     } catch (err) {
-      error = 'An unexpected error occurred';
+      error = err.message || 'An unexpected error occurred';
     } finally {
       loading = false;
     }
@@ -39,11 +41,13 @@
     loading = true;
     error = '';
     try {
-      const response = await fetch(`${WEBUI_BASE_URL}/api/auth/confirm-reset-password`, {
-        method: 'POST',
+      const response = await fetch(`${WEBUI_BASE_URL}/confirm-reset-password`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Allow-Origin': '*',
         },
+        credentials: 'include',
         body: JSON.stringify({ token, new_password: newPassword }),
       });
 
@@ -64,6 +68,7 @@
 <div class="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
   <div class="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
     <div class="text-center">
+      <img src="/static/bullbillion.png" alt="BullBillion Logo" class="mx-auto h-12 w-auto mb-4" />
       <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
         {token ? 'Reset Password' : 'Forgot Password'}
       </h1>

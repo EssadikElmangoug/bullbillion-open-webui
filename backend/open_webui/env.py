@@ -109,7 +109,7 @@ log.setLevel(SRC_LOG_LEVELS["CONFIG"])
 
 WEBUI_NAME = os.environ.get("WEBUI_NAME", "BullBillion | Powered by AI | Supported by Human Experts.")
 if WEBUI_NAME != "BullBillion | Powered by AI | Supported by Human Experts.":
-    WEBUI_NAME += " (BullBillion AI)"
+    WEBUI_NAME += " (BullBillion)"
 
 WEBUI_FAVICON_URL = "https://openwebui.com/favicon.png"
 

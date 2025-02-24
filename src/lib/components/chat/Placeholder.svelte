@@ -122,11 +122,8 @@
 								>
 									<img
 										crossorigin="anonymous"
-										src={model?.info?.meta?.profile_image_url ??
-											($i18n.language === 'dg-DG'
-												? `/doge.png`
-												: `${WEBUI_BASE_URL}/static/bullbillion.png`)}
-										class=" size-9 @sm:size-10 rounded-full border-[1px] border-gray-200 dark:border-none"
+										src="/static/bullbillion.png"
+										class=" size-9 @sm:size-10 "
 										alt="logo"
 										draggable="false"
 									/>
@@ -137,12 +134,12 @@
 				</div>
 
 				<div class=" text-3xl @sm:text-4xl line-clamp-1" in:fade={{ duration: 100 }}>
-					{#if models[selectedModelIdx]?.name}
-						{models[selectedModelIdx]?.name}
-					{:else}
-						{$i18n.t('BullBillion AI')}
-					{/if}
+					{$i18n.t(`Hi, I'm BullBillion`)}
 				</div>
+			</div>
+
+			<div class="mt-0.5 px-2 text-base font-normal text-gray-500 dark:text-gray-400 text-center">
+				Powered by AI. Supported by Human Experts
 			</div>
 
 			<div class="flex mt-1 mb-2">
@@ -199,7 +196,7 @@
 					{transparentBackground}
 					{stopResponse}
 					{createMessagePair}
-					placeholder={$i18n.t('How can I help you today?')}
+					placeholder={$i18n.t('Message BullBillion')}
 					on:upload={(e) => {
 						dispatch('upload', e.detail);
 					}}
