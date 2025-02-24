@@ -1,0 +1,461 @@
+<script>
+	import { toast } from 'svelte-sonner';
+
+	import { onMount, getContext } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+
+	import { getBackendConfig } from '$lib/apis';
+	import { ldapUserSignIn, getSessionUser, userSignIn, userSignUp } from '$lib/apis/auths';
+
+	import { WEBUI_API_BASE_URL, WEBUI_BASE_URL } from '$lib/constants';
+	import { WEBUI_NAME, config, user, socket } from '$lib/stores';
+
+	import { generateInitialsImage, canvasPixelTest } from '$lib/utils';
+
+	import Spinner from '$lib/components/common/Spinner.svelte';
+	import OnBoarding from '$lib/components/OnBoarding.svelte';
+
+	// Import Firebase auth
+	import { initializeApp } from "firebase/app";
+	import { 
+		getAuth, 
+		signInWithEmailAndPassword,
+		createUserWithEmailAndPassword,
+		GoogleAuthProvider,
+		signInWithPopup,
+		FacebookAuthProvider,
+		OAuthProvider,
+		PhoneAuthProvider,
+		signInWithPhoneNumber,
+		updateProfile,
+		signInWithCredential
+	} from "firebase/auth";
+
+	const i18n = getContext('i18n');
+
+	let loaded = false;
+
+	let mode = 'signin'; // signin, signup, phone
+	let loading = false;
+	let error = '';
+
+	// Form fields
+	let email = '';
+	let password = '';
+	let name = '';
+	let phoneNumber = '';
+	let otp = '';
+	let showOtpInput = false;
+
+	let ldapUsername = '';
+
+	const firebaseConfig = {
+		apiKey: "AIzaSyBdItr94RE5XLBTfK_LQrUK0xzQ99mVo_E",
+		authDomain: "bullbillion-f5997.firebaseapp.com",
+		projectId: "bullbillion-f5997",
+		storageBucket: "bullbillion-f5997.firebasestorage.app",
+		messagingSenderId: "135105655235",
+		appId: "1:135105655235:web:5952cae49f1f5dc3244d76",
+		measurementId: "G-9S7FZ7W38V"
+	};
+
+	// Initialize Firebase
+	const app = initializeApp(firebaseConfig);
+	const auth = getAuth(app);
+
+	const setSessionUser = async (sessionUser) => {
+		if (sessionUser) {
+			console.log(sessionUser);
+			toast.success($i18n.t(`You're now logged in.`));
+			if (sessionUser.token) {
+				localStorage.token = sessionUser.token;
+			}
+
+			$socket.emit('user-join', { auth: { token: sessionUser.token } });
+			await user.set(sessionUser);
+			await config.set(await getBackendConfig());
+			goto('/');
+		}
+	};
+
+	async function handleEmailAuth() {
+		loading = true;
+		error = '';
+		try {
+			let userCredential;
+			if (mode === 'signin') {
+				userCredential = await signInWithEmailAndPassword(auth, email, password);
+			} else {
+				userCredential = await createUserWithEmailAndPassword(auth, email, password);
+				// Update profile with name if signing up
+				await updateProfile(userCredential.user, {
+					displayName: name
+				});
+			}
+			
+			const firebaseUser = userCredential.user;
+			await setSessionUser({
+				token: await firebaseUser.getIdToken(),
+				email: firebaseUser.email,
+				name: firebaseUser.displayName || name,
+				uid: firebaseUser.uid
+			});
+			
+			toast.success('Successfully authenticated');
+			goto('/');
+		} catch (err) {
+			error = err.message;
+			toast.error(error);
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function handleSocialAuth(provider) {
+		try {
+			let authProvider;
+			switch(provider) {
+				case 'google':
+					authProvider = new GoogleAuthProvider();
+					break;
+				case 'facebook':
+					authProvider = new FacebookAuthProvider();
+					break;
+				case 'apple':
+					authProvider = new OAuthProvider('apple.com');
+					break;
+				default:
+					throw new Error('Invalid provider');
+			}
+
+			const result = await signInWithPopup(auth, authProvider);
+			const firebaseUser = result.user;
+			
+			await setSessionUser({
+				token: await firebaseUser.getIdToken(),
+				email: firebaseUser.email,
+				name: firebaseUser.displayName,
+				uid: firebaseUser.uid
+			});
+
+			toast.success('Successfully authenticated');
+			goto('/');
+		} catch (err) {
+			error = err.message;
+			toast.error(error);
+		}
+	}
+
+	async function handlePhoneAuth() {
+		loading = true;
+		error = '';
+		try {
+			if (!showOtpInput) {
+				// Send OTP
+				const phoneProvider = new PhoneAuthProvider(auth);
+				const verificationId = await signInWithPhoneNumber(auth, phoneNumber);
+				showOtpInput = true;
+				toast.success('OTP sent successfully');
+			} else {
+				// Verify OTP
+				const credential = PhoneAuthProvider.credential(verificationId, otp);
+				const result = await signInWithCredential(auth, credential);
+				const firebaseUser = result.user;
+				
+				await setSessionUser({
+					token: await firebaseUser.getIdToken(),
+					phoneNumber: firebaseUser.phoneNumber,
+					uid: firebaseUser.uid
+				});
+
+				toast.success('Successfully authenticated');
+				goto('/');
+			}
+		} catch (err) {
+			error = err.message;
+			toast.error(error);
+		} finally {
+			loading = false;
+		}
+	}
+
+	const signInHandler = async () => {
+		const sessionUser = await userSignIn(email, password).catch((error) => {
+			toast.error(`${error}`);
+			return null;
+		});
+
+		await setSessionUser(sessionUser);
+	};
+
+	const signUpHandler = async () => {
+		const sessionUser = await userSignUp(name, email, password, generateInitialsImage(name)).catch(
+			(error) => {
+				toast.error(`${error}`);
+				return null;
+			}
+		);
+
+		await setSessionUser(sessionUser);
+	};
+
+	const ldapSignInHandler = async () => {
+		const sessionUser = await ldapUserSignIn(ldapUsername, password).catch((error) => {
+			toast.error(`${error}`);
+			return null;
+		});
+		await setSessionUser(sessionUser);
+	};
+
+	const submitHandler = async () => {
+		if (mode === 'ldap') {
+			await ldapSignInHandler();
+		} else if (mode === 'signin') {
+			await signInHandler();
+		} else {
+			await signUpHandler();
+		}
+	};
+
+	const checkOauthCallback = async () => {
+		if (!$page.url.hash) {
+			return;
+		}
+		const hash = $page.url.hash.substring(1);
+		if (!hash) {
+			return;
+		}
+		const params = new URLSearchParams(hash);
+		const token = params.get('token');
+		if (!token) {
+			return;
+		}
+		const sessionUser = await getSessionUser(token).catch((error) => {
+			toast.error(`${error}`);
+			return null;
+		});
+		if (!sessionUser) {
+			return;
+		}
+		localStorage.token = token;
+		await setSessionUser(sessionUser);
+	};
+
+	let onboarding = false;
+
+	onMount(async () => {
+		if ($user !== undefined) {
+			await goto('/');
+		}
+		await checkOauthCallback();
+
+		loaded = true;
+		if (($config?.features.auth_trusted_header ?? false) || $config?.features.auth === false) {
+			await signInHandler();
+		} else {
+			onboarding = $config?.onboarding ?? false;
+		}
+	});
+</script>
+
+<svelte:head>
+	<title>
+		{`${$WEBUI_NAME}`}
+	</title>
+</svelte:head>
+
+<OnBoarding
+	bind:show={onboarding}
+	getStartedHandler={() => {
+		onboarding = false;
+		mode = $config?.features.enable_ldap ? 'ldap' : 'signup';
+	}}
+/>
+
+<div class="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-8 dark:bg-gray-900">
+	<div class="w-full max-w-md space-y-6 rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800 sm:p-8">
+		<div class="text-center">
+			<h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">
+				{mode === 'signin' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Phone Authentication'}
+			</h1>
+			
+			{#if error}
+				<div class="mt-4 rounded-md bg-red-50 p-3 dark:bg-red-900/50 sm:p-4">
+					<p class="text-xs text-red-700 dark:text-red-200 sm:text-sm">{error}</p>
+				</div>
+			{/if}
+		</div>
+
+		<!-- Social Authentication Buttons -->
+		<div class="space-y-2 sm:space-y-3">
+			<button
+				on:click={() => handleSocialAuth('google')}
+				class="flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 sm:gap-3 sm:px-4 sm:text-sm"
+			>
+				<svg class="h-5 w-5 sm:h-6 sm:w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+					<path fill="#fbc02d" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12	s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20	s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#e53935" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039	l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4caf50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36	c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1565c0" d="M43.611,20.083L43.595,20L42,20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571	c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+				</svg>
+				<span>Continue with Google</span>
+			</button>
+
+			<button
+				on:click={() => handleSocialAuth('apple')}
+				class="flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 sm:gap-3 sm:px-4 sm:text-sm"
+			>
+				<svg class="h-5 w-5 sm:h-6 sm:w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+					<path d="M 44.527344 34.75 C 43.449219 37.144531 42.929688 38.214844 41.542969 40.328125 C 39.601563 43.28125 36.863281 46.96875 33.480469 46.992188 C 30.46875 47.019531 29.691406 45.027344 25.601563 45.0625 C 21.515625 45.082031 20.664063 47.03125 17.648438 47 C 14.261719 46.96875 11.671875 43.648438 9.730469 40.699219 C 4.300781 32.429688 3.726563 22.734375 7.082031 17.578125 C 9.457031 13.921875 13.210938 11.773438 16.738281 11.773438 C 20.332031 11.773438 22.589844 13.746094 25.558594 13.746094 C 28.441406 13.746094 30.195313 11.769531 34.351563 11.769531 C 37.492188 11.769531 40.8125 13.480469 43.1875 16.433594 C 35.421875 20.691406 36.683594 31.78125 44.527344 34.75 Z M 31.195313 8.46875 C 32.707031 6.527344 33.855469 3.789063 33.4375 1 C 30.972656 1.167969 28.089844 2.742188 26.40625 4.78125 C 24.878906 6.640625 23.613281 9.398438 24.105469 12.066406 C 26.796875 12.152344 29.582031 10.546875 31.195313 8.46875 Z"></path>
+				</svg>
+				<span>Continue with Apple</span>
+			</button>
+
+			<button
+				on:click={() => handleSocialAuth('facebook')}
+				class="flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 sm:gap-3 sm:px-4 sm:text-sm"
+			>
+				<svg class="h-5 w-5 sm:h-6 sm:w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+					<path fill="#0081fb" d="M47,29.36l-2.193,1.663L42.62,29.5c0-0.16,0-0.33-0.01-0.5c0-0.16,0-0.33-0.01-0.5	c-0.14-3.94-1.14-8.16-3.14-11.25c-1.54-2.37-3.51-3.5-5.71-3.5c-2.31,0-4.19,1.38-6.27,4.38c-0.06,0.09-0.13,0.18-0.19,0.28	c-0.04,0.05-0.07,0.1-0.11,0.16c-0.1,0.15-0.2,0.3-0.3,0.46c-0.9,1.4-1.84,3.03-2.86,4.83c-0.09,0.17-0.19,0.34-0.28,0.51	c-0.03,0.04-0.06,0.09-0.08,0.13l-0.21,0.37l-1.24,2.19c-2.91,5.15-3.65,6.33-5.1,8.26C14.56,38.71,12.38,40,9.51,40	c-3.4,0-5.56-1.47-6.89-3.69C1.53,34.51,1,32.14,1,29.44l4.97,0.17c0,1.76,0.38,3.1,0.89,3.92C7.52,34.59,8.49,35,9.5,35	c1.29,0,2.49-0.27,4.77-3.43c1.83-2.53,3.99-6.07,5.44-8.3l1.37-2.09l0.29-0.46l0.3-0.45l0.5-0.77c0.76-1.16,1.58-2.39,2.46-3.57	c0.1-0.14,0.2-0.28,0.31-0.42c0.1-0.14,0.21-0.28,0.31-0.41c0.9-1.15,1.85-2.22,2.87-3.1c1.85-1.61,3.84-2.5,5.85-2.5	c3.37,0,6.58,1.95,9.04,5.61c2.51,3.74,3.82,8.4,3.97,13.25c0.01,0.16,0.01,0.33,0.01,0.5C47,29.03,47,29.19,47,29.36z"></path><linearGradient id="wSMw7pqi7WIWHewz2_TZXa_PvvcWRWxRKSR_gr1" x1="42.304" x2="13.533" y1="24.75" y2="24.75" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#0081fb"></stop><stop offset=".995" stop-color="#0064e1"></stop></linearGradient><path fill="url(#wSMw7pqi7WIWHewz2_TZXa_PvvcWRWxRKSR_gr1)" d="M4.918,15.456	C7.195,11.951,10.483,9.5,14.253,9.5c2.184,0,4.354,0.645,6.621,2.493c2.479,2.02,5.122,5.346,8.419,10.828l1.182,1.967	c2.854,4.746,4.477,7.187,5.428,8.339C37.125,34.606,37.888,35,39,35c2.82,0,3.617-2.54,3.617-5.501L47,29.362	c0,3.095-0.611,5.369-1.651,7.165C44.345,38.264,42.387,40,39.093,40c-2.048,0-3.862-0.444-5.868-2.333	c-1.542-1.45-3.345-4.026-4.732-6.341l-4.126-6.879c-2.07-3.452-3.969-6.027-5.068-7.192c-1.182-1.254-2.642-2.754-5.067-2.754	c-1.963,0-3.689,1.362-5.084,3.465L4.918,15.456z"></path><linearGradient id="wSMw7pqi7WIWHewz2_TZXb_PvvcWRWxRKSR_gr2" x1="7.635" x2="7.635" y1="32.87" y2="13.012" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#0081fb"></stop><stop offset=".995" stop-color="#0064e1"></stop></linearGradient><path fill="url(#wSMw7pqi7WIWHewz2_TZXb_PvvcWRWxRKSR_gr2)" d="M14.25,14.5	c-1.959,0-3.683,1.362-5.075,3.465C7.206,20.937,6,25.363,6,29.614c0,1.753-0.003,3.072,0.5,3.886l-3.84,2.813	C1.574,34.507,1,32.2,1,29.5c0-4.91,1.355-10.091,3.918-14.044C7.192,11.951,10.507,9.5,14.27,9.5L14.25,14.5z"></path><path d="M21.67,20.27l-0.3,0.45l-0.29,0.46c0.71,1.03,1.52,2.27,2.37,3.69l0.21-0.37c0.02-0.04,0.05-0.09,0.08-0.13 c0.09-0.17,0.19-0.34,0.28-0.51C23.19,22.5,22.39,21.29,21.67,20.27z M24.94,15.51c-0.11,0.14-0.21,0.28-0.31,0.42 c0.73,0.91,1.47,1.94,2.25,3.1c0.1-0.16,0.2-0.31,0.3-0.46c0.04-0.06,0.07-0.11,0.11-0.16c0.06-0.1,0.13-0.19,0.19-0.28 c-0.76-1.12-1.5-2.13-2.23-3.03C25.15,15.23,25.04,15.37,24.94,15.51z" opacity=".05"></path><path d="M21.67,20.27l-0.3,0.45c0.71,1.02,1.51,2.24,2.37,3.65c0.09-0.17,0.19-0.34,0.28-0.51C23.19,22.5,22.39,21.29,21.67,20.27 z M24.63,15.93c0.73,0.91,1.47,1.94,2.25,3.1c0.1-0.16,0.2-0.31,0.3-0.46c-0.77-1.14-1.52-2.16-2.24-3.06 C24.83,15.65,24.73,15.79,24.63,15.93z" opacity=".07"></path>
+				</svg>
+				<span>Continue with Facebook</span>
+			</button>
+		</div>
+
+		<div class="relative">
+			<div class="absolute inset-0 flex items-center">
+				<div class="w-full border-t border-gray-300 dark:border-gray-600"></div>
+			</div>
+			<div class="relative flex justify-center text-xs sm:text-sm">
+				<span class="bg-white px-2 text-gray-500 dark:bg-gray-800 dark:text-gray-400">Or continue with</span>
+			</div>
+		</div>
+
+		{#if mode === 'phone'}
+			<!-- Phone Authentication Form -->
+			<form on:submit|preventDefault={handlePhoneAuth} class="space-y-4 sm:space-y-6">
+				<div>
+					<label for="phone" class="block text-xs font-medium text-gray-700 dark:text-gray-300 sm:text-sm">
+						Phone Number
+					</label>
+					<input
+						id="phone"
+						type="tel"
+						bind:value={phoneNumber}
+						required
+						class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+						placeholder="+1234567890"
+					/>
+				</div>
+
+				{#if showOtpInput}
+					<div>
+						<label for="otp" class="block text-xs font-medium text-gray-700 dark:text-gray-300 sm:text-sm">
+							Enter OTP
+						</label>
+						<input
+							id="otp"
+							type="text"
+							bind:value={otp}
+							required
+							class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+							placeholder="Enter OTP"
+						/>
+					</div>
+				{/if}
+
+				<button
+					type="submit"
+					disabled={loading}
+					class="w-full rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:hover:bg-blue-700 sm:px-4 sm:text-sm"
+				>
+					{loading ? 'Processing...' : showOtpInput ? 'Verify OTP' : 'Send OTP'}
+				</button>
+			</form>
+		{:else}
+			<!-- Email Authentication Form -->
+			<form on:submit|preventDefault={handleEmailAuth} class="space-y-4 sm:space-y-6">
+				{#if mode === 'signup'}
+					<div>
+						<label for="name" class="block text-xs font-medium text-gray-700 dark:text-gray-300 sm:text-sm">
+							Full Name
+						</label>
+						<input
+							id="name"
+							type="text"
+							bind:value={name}
+							required
+							class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+							placeholder="John Doe"
+						/>
+					</div>
+				{/if}
+
+				<div>
+					<label for="email" class="block text-xs font-medium text-gray-700 dark:text-gray-300 sm:text-sm">
+						Email address
+					</label>
+					<input
+						id="email"
+						type="email"
+						bind:value={email}
+						required
+						class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+						placeholder="you@example.com"
+					/>
+				</div>
+
+				<div>
+					<label for="password" class="block text-xs font-medium text-gray-700 dark:text-gray-300 sm:text-sm">
+						Password
+					</label>
+					<input
+						id="password"
+						type="password"
+						bind:value={password}
+						required
+						class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+						placeholder="••••••••"
+					/>
+				</div>
+
+				<button
+					type="submit"
+					disabled={loading}
+					class="w-full rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:hover:bg-blue-700 sm:px-4 sm:text-sm"
+				>
+					{loading ? 'Processing...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
+				</button>
+			</form>
+		{/if}
+
+		<!-- Footer Links -->
+		<div class="flex flex-col items-center space-y-2 text-xs sm:text-sm">
+			<div class="flex gap-1 text-gray-500 dark:text-gray-400">
+				{mode === 'signin' ? "Don't have an account?" : 'Already have an account?'}
+				<button
+					class="text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+					on:click={() => mode = mode === 'signin' ? 'signup' : 'signin'}
+				>
+					{mode === 'signin' ? 'Sign up' : 'Sign in'}
+				</button>
+			</div>
+
+			<div class="flex flex-col gap-2 sm:flex-row sm:gap-4">
+				<button
+					class="text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+					on:click={() => mode = mode === 'phone' ? 'signin' : 'phone'}
+				>
+					{mode === 'phone' ? 'Use Email Instead' : 'Use Phone Instead'}
+				</button>
+
+				{#if mode === 'signin'}
+					<a
+						href="/auth/reset-password"
+						class="text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+					>
+						Forgot password?
+					</a>
+				{/if}
+			</div>
+		</div>
+	</div>
+</div>

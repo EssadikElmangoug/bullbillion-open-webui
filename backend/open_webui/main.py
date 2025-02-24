@@ -343,7 +343,8 @@ from datetime import datetime, timedelta
 import secrets
 
 # MongoDB Configuration
-MONGODB_URI = "mongodb://localhost:27017/"  # Update with your MongoDB URI
+# MONGODB_URI = "mongodb://mongodb:27017/"  # Changed from localhost to container name
+MONGODB_URI = "mongodb://localhost:27017/"  # Changed from localhost to container name
 MONGODB_DB_NAME = "bullbillion"
 
 try:
@@ -822,9 +823,9 @@ async def inspect_websocket(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://204.12.203.155:5173"],
+    allow_origins=["http://204.12.203.155:5173", "http://localhost:5173", "http://204.12.203.155:3000", "http://bullbillion.com", "https://bullbillion.com"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Explicitly list allowed methods
     allow_headers=["*"],
 )
 
@@ -1259,7 +1260,7 @@ async def get_manifest_json():
     return {
         "name": WEBUI_NAME,
         "short_name": WEBUI_NAME,
-        "description": "Open WebUI is an open, extensible, user-friendly interface for AI that adapts to your workflow.",
+        "description": "BullBillion is an open, extensible, user-friendly interface for AI that adapts to your workflow.",
         "start_url": "/",
         "display": "standalone",
         "background_color": "#343541",
@@ -1335,18 +1336,6 @@ else:
         f"Frontend build directory not found at '{FRONTEND_BUILD_DIR}'. Serving API only."
     )
 
-
-# @app.post("/api/admin/run-migration")
-# async def run_migration():
-#     from open_webui.migrations.add_is_verified_column import migrate
-#     migrate()
-#     return {"message": "Migration completed successfully"}
-
-# Add these configuration variables near other config variables
-# MAILGUN_API_KEY = os.getenv("MAILGUN_API_KEY")
-# MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN")
-# MAILGUN_FROM_EMAIL = os.getenv("MAILGUN_FROM_EMAIL", "noreply@yourdomain.com")
-# Add these configuration variables near other config variables
 MAILGUN_API_KEY = "0d5494dae3701e820ee832bd623c8cc9-ac3d5f74-429182dd"
 MAILGUN_DOMAIN = "www.bullbillion.com"
 MAILGUN_FROM_EMAIL = "support@bullbillion.com"
@@ -1358,16 +1347,7 @@ class ConfirmResetPasswordRequest(BaseModel):
     token: str
     new_password: str
 
-# def send_simple_message(email):
-#   	return requests.post(
-#   		f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
-#   		auth=("api", MAILGUN_API_KEY),
-#   		data={"from": f"BullBillion <{MAILGUN_FROM_EMAIL}>",
-# 			"to": email,
-#   			"subject": "Hello Bull Billion",
-#   			"text": "Congratulations Bull Billion, you just sent an email with Mailgun! You are truly awesome!"})
-
-@app.post("/api/auth/reset-password")
+@app.put("/api/auth/reset-password")
 async def request_password_reset(request: ResetPasswordRequest):
     user = Users.get_user_by_email(request.email)
     if not user:
@@ -1549,3 +1529,49 @@ async def confirm_password_reset(request: ConfirmResetPasswordRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to reset password"
         )
+    # Check MongoDB for reset token
+    user_mongo = users_collection.find_one({"reset_token": request.token})
+    
+    if not user_mongo or user_mongo.get('reset_token_expires') < datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+    
+    # Get user from SQLite
+    user_sqlite = Users.get_user_by_email(user_mongo['email'])
+    if not user_sqlite:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    try:
+        # Update password in SQLite using Auths model
+        hashed_password = get_password_hash(request.new_password)
+        success = Auths.update_user_password_by_id(user_sqlite.id, hashed_password)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update password"
+            )
+
+        # Clear reset token in MongoDB
+        users_collection.update_one(
+            {"email": user_mongo['email']},
+            {"$unset": {"reset_token": "", "reset_token_expires": ""}}
+        )
+        
+        return {"message": "Password successfully reset"}
+
+    except Exception as e:
+        log.error(f"Error resetting password: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to reset password"
+        )
+
+
+
+    

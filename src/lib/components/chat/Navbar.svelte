@@ -73,25 +73,20 @@
 					</div>
 					
 				</button>
-				<a
-					id="sidebar-new-chat-button"
-					class="flex justify-between items-center flex-1 rounded-xl px-2 py-2 h-full text-right hover:bg-gray-100 dark:hover:bg-gray-800 transition no-drag-region"
-					href="/"
-						draggable="false"
-						on:click={async () => {
-							selectedChatId = null;
-							await goto('/');
-							const newChatButton = document.getElementById('new-chat-button');
-							setTimeout(() => {
-								newChatButton?.click();
-								if ($mobile) {
-									showSidebar.set(false);
-								}
-							}, 0);
-						}}
-					>
-						<PencilSquare />
-				</a>
+				<button
+					id="new-chat-button"
+					class=" flex {$showSidebar
+						? 'md:hidden'
+						: ''} cursor-pointer px-2 py-2 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+					on:click={() => {
+						initNewChat();
+					}}
+					aria-label="New Chat"
+				>
+					<div class=" m-auto self-center">
+						<PencilSquare className=" size-5" strokeWidth="2" />
+					</div>
+				</button>
 			</div>
 
 			<div
@@ -100,7 +95,10 @@
 				<!-- {#if showModelSelector}
 					<ModelSelector bind:selectedModels showSetDefault={!shareEnabled} />
 				{/if} -->
-				<h1 class="hidden md:block font-bold text-2xl ml-1">BullBillion AI</h1>
+				<div class="flex items-center justify-start gap-2">
+					<img src="/static/bullbillion.png" alt="BullBillion Logo" class="hidden md:block w-8 h-8 ml-1" />
+					<h1 class="hidden md:block font-bold text-2xl ml-1">BullBillion</h1>
+				</div>
 			</div>
 
 			<div class="absolute left-1/2 transform -translate-x-1/2 w-96 max-w-[calc(100%-200px)]">

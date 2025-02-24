@@ -85,6 +85,8 @@
 	import Placeholder from './Placeholder.svelte';
 	import NotificationToast from '../NotificationToast.svelte';
 	import Spinner from '../common/Spinner.svelte';
+	import AuthModal from '../auth/AuthModal.svelte';
+	import Tooltip from '../common/Tooltip.svelte';
 
 	export let chatIdProp = '';
 	export let userType = null;
@@ -135,6 +137,14 @@
 	let chatFiles = [];
 	let files = [];
 	let params = {};
+
+	let showAuthModal = false;
+	let authMode = 'signin';
+
+	function handleShowAuthModalChange(event) {
+		showAuthModal = event.detail; // Update happy state based on child's event
+		console.log('handleShowAuthModalChange', showAuthModal);
+	}
 
 	$: if (chatIdProp) {
 		(async () => {
@@ -1220,8 +1230,14 @@
 
 	const submitPrompt = async (userPrompt, { _raw = false } = {}) => {
 		if (userType === 'guest') {
-			toast.error($i18n.t('Please login to continue'));
+			// Option 1: Use window.location for immediate redirect
+			// window.location.href = '/auth';
+			showAuthModal = true;
 			return;
+			
+			// Option 2: Use goto with replace and invalidate
+			// await goto('/auth', { replaceState: true });
+			// return;
 		}
 		console.log('submitPrompt', userPrompt, $chatId);
 
@@ -1888,7 +1904,7 @@
 <div
 	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
 		? '  md:max-w-[calc(100%-260px)]'
-		: ' '} w-full max-w-full flex flex-col"
+		: ' '} w-full max-w-full flex flex-col relative {showAuthModal ? 'blur-sm' : ''}"
 	id="chat-container"
 >
 	{#if chatIdProp === '' || (!loading && chatIdProp)}
@@ -1906,31 +1922,47 @@
 		{/if}
 
 		{#if userType === 'guest'}
-		<div class="flex items-center justify-between w-full p-2 flex-col sm:flex-row gap-2 sm:gap-4">
-			<h1 class="font-bold text-2xl text-nowrap">BullBillion AI</h1>
-			<div class="flex items-center justify-end w-full sm:w-auto gap-2 sm:gap-4">
-				<a href="/auth" target="_blank" class="w-full sm:w-auto text-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">Login</a>
-				<a href="/auth" target="_blank" class="w-full sm:w-auto text-center px-4 py-2 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors">Signup</a>
+			<div class="flex items-center justify-between w-full p-2 flex-col sm:flex-row gap-2 sm:gap-4">
+				<h1 class="font-bold text-2xl text-nowrap">BullBillion</h1>
+				<div class="flex items-center justify-end w-full sm:w-auto gap-2 sm:gap-4">
+					<button 
+						on:click={() => {
+							authMode = 'signin';
+							showAuthModal = true;
+						}} 
+						class="w-full sm:w-auto text-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+					>
+						Login
+					</button>
+					<button 
+						on:click={() => {
+							authMode = 'signup';
+							showAuthModal = true;
+						}} 
+						class="w-full sm:w-auto text-center px-4 py-2 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+					>
+						Signup
+					</button>
+				</div>
 			</div>
-		</div>
 		{:else}
 			<Navbar
 				bind:this={navbarElement}
-			chat={{
-				id: $chatId,
-				chat: {
-					title: $chatTitle,
-					models: selectedModels,
-					system: $settings.system ?? undefined,
-					params: params,
-					history: history,
-					timestamp: Date.now()
-				}
-			}}
-			title={$chatTitle}
-			bind:selectedModels
-			shareEnabled={!!history.currentId}
-			{initNewChat}
+				chat={{
+					id: $chatId,
+					chat: {
+						title: $chatTitle,
+						models: selectedModels,
+						system: $settings.system ?? undefined,
+						params: params,
+						history: history,
+						timestamp: Date.now()
+					}
+				}}
+				title={$chatTitle}
+				bind:selectedModels
+				shareEnabled={!!history.currentId}
+				{initNewChat}
 			/>
 		{/if}
 
@@ -2068,6 +2100,8 @@
 										await uploadWeb(data);
 									} else if (type === 'youtube') {
 										await uploadYoutubeTranscription(data);
+									} else if (type === 'google-drive') {
+										await uploadGoogleDriveFile(data);
 									}
 								}}
 								on:submit={async (e) => {
@@ -2116,3 +2150,45 @@
 		</div>
 	{/if}
 </div>
+
+<AuthModal 
+	bind:show={showAuthModal}
+	bind:mode={authMode}
+	on:success={() => {
+		showAuthModal = false;
+		userType = 'user';
+	}}
+	on:close={() => {
+		showAuthModal = false;
+	}}
+/>
+
+{#if userType !== 'guest'}
+	<div class="absolute top-4 right-4 z-50">
+		<Tooltip content="BullBillion Services">
+			<button 
+				class="p-3 bg-gradient-to-r from-pink-500 to-pink-600 rounded-lg 
+				shadow-lg hover:from-pink-600 hover:to-pink-700 transition-all duration-300 ease-in-out
+				flex items-center justify-center group"
+				on:click={() => {
+					// Add your live chat widget opening logic here
+					window.openLiveChat?.();
+				}}
+			>
+				<svg 
+					focusable="false" 
+					aria-hidden="true" 
+					viewBox="0 0 28 32" 
+					width="22.4" 
+					height="25.6"
+					class="transform group-hover:scale-105 transition-transform"
+				>
+					<path 
+						fill="white" 
+						d="M28,32 C28,32 23.2863266,30.1450667 19.4727818,28.6592 L3.43749107,28.6592 C1.53921989,28.6592 0,27.0272 0,25.0144 L0,3.6448 C0,1.632 1.53921989,0 3.43749107,0 L24.5615088,0 C26.45978,0 27.9989999,1.632 27.9989999,3.6448 L27.9989999,22.0490667 L28,22.0490667 L28,32 Z M23.8614088,20.0181333 C23.5309223,19.6105242 22.9540812,19.5633836 22.5692242,19.9125333 C22.5392199,19.9392 19.5537934,22.5941333 13.9989999,22.5941333 C8.51321617,22.5941333 5.48178311,19.9584 5.4277754,19.9104 C5.04295119,19.5629428 4.46760991,19.6105095 4.13759108,20.0170667 C3.97913051,20.2124916 3.9004494,20.4673395 3.91904357,20.7249415 C3.93763774,20.9825435 4.05196575,21.2215447 4.23660523,21.3888 C4.37862552,21.5168 7.77411059,24.5386667 13.9989999,24.5386667 C20.2248893,24.5386667 23.6203743,21.5168 23.7623946,21.3888 C23.9467342,21.2215726 24.0608642,20.9827905 24.0794539,20.7254507 C24.0980436,20.4681109 24.0195551,20.2135019 23.8614088,20.0181333 Z"
+					/>
+				</svg>
+			</button>
+		</Tooltip>
+	</div>
+{/if}
