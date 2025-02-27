@@ -17,13 +17,15 @@
     loading = true;
     error = '';
     try {
-      const response = await fetch(`${WEBUI_BASE_URL}/api/auth/reset-password`, {
+      const response = await fetch(`${WEBUI_BASE_URL}/api/v1/auths/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email }),
       });
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -41,7 +43,7 @@
     loading = true;
     error = '';
     try {
-      const response = await fetch(`${WEBUI_BASE_URL}/confirm-reset-password`, {
+      const response = await fetch(`${WEBUI_BASE_URL}/api/v1/auths/confirm-reset-password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
