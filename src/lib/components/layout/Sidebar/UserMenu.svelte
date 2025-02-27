@@ -10,6 +10,8 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import { userSignOut } from '$lib/apis/auths';
 
+	import { user } from '$lib/stores';
+
 	const i18n = getContext('i18n');
 
 	export let show = false;
@@ -37,6 +39,7 @@
 			align="start"
 			transition={(e) => fade(e, { duration: 100 })}
 		>
+			<p class="text-sm font-medium text-center select-none">{$user.name}</p>
 			<button
 				class="flex rounded-md py-2 px-3 w-full hover:bg-gray-50 dark:hover:bg-gray-800 transition"
 				on:click={async () => {

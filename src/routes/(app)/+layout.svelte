@@ -248,7 +248,7 @@
 		{#if loaded}
 			{#if $user.role === 'guest'}
 				<!-- <Sidebar /> -->
-				<Chat userType={$user.role} />
+				<Chat userType="guest" />
 				<!-- <slot /> -->
 			{:else if !['user', 'admin'].includes($user.role)}
 				<AccountPending />
