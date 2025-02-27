@@ -56,6 +56,8 @@ from ldap3.utils.conv import escape_filter_chars
 
 from pymongo import MongoClient
 from datetime import datetime, timedelta
+import secrets
+import requests
 
 router = APIRouter()
 
@@ -63,8 +65,8 @@ log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MAIN"])
 
 # MongoDB Configuration
-MONGODB_URI = "mongodb://mongodb:27017/"  # Update with your MongoDB URI
-# MONGODB_URI = "mongodb://localhost:27017/"  # Update with your MongoDB URI
+# MONGODB_URI = "mongodb://mongodb:27017/"  # Update with your MongoDB URI
+MONGODB_URI = "mongodb://localhost:27017/"  # Update with your MongoDB URI
 MONGODB_DB_NAME = "bullbillion"
 
 try:
@@ -876,3 +878,205 @@ async def get_api_key(user=Depends(get_current_user)):
         }
     else:
         raise HTTPException(404, detail=ERROR_MESSAGES.API_KEY_NOT_FOUND)
+
+
+############################
+# Reset Password
+############################
+
+
+
+MAILGUN_API_KEY = "0d5494dae3701e820ee832bd623c8cc9-ac3d5f74-429182dd"
+MAILGUN_DOMAIN = "www.bullbillion.com"
+MAILGUN_FROM_EMAIL = "support@bullbillion.com"
+
+class ResetPasswordRequest(BaseModel):
+    email: str
+
+class ConfirmResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+@router.post("/reset-password")
+async def request_password_reset(request: ResetPasswordRequest):
+    user = Users.get_user_by_email(request.email)
+    if not user:
+        # Return success even if email doesn't exist to prevent email enumeration
+        return {"message": "This email is not associated with an account."}
+    
+    # Generate reset token
+    reset_token = secrets.token_urlsafe(32)
+    expiry = datetime.utcnow() + timedelta(hours=24)
+    
+    # Store reset token in database
+    users_collection.update_one(
+        {"email": request.email},
+        {"$set": {"reset_token": reset_token, "reset_token_expires": expiry}}
+    )
+    
+    # Send email using Mailgun
+    reset_url = f"https://www.bullbillion.com/auth/reset-password?token={reset_token}"
+    
+    try:
+        response = requests.post(
+            f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
+            auth=("api", MAILGUN_API_KEY),
+            data={
+                "from": f"BullBillion <{MAILGUN_FROM_EMAIL}>",
+                "to": request.email,
+                "subject": "Password Reset Request",
+                "html": f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <style>
+                        .email-container {{
+                            max-width: 600px;
+                            margin: 0 auto;
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333333;
+                        }}
+                        .header {{
+                            background-color: black;
+                            padding: 20px;
+                            text-align: center;
+                        }}
+                        .header img {{
+                            max-width: 200px;
+                            height: auto;
+                        }}
+                        .content {{
+                            background-color: #ffffff;
+                            padding: 30px;
+                            border-radius: 5px;
+                            margin: 20px 0;
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        }}
+                        .reset-button {{
+                            display: inline-block;
+                            background-color: #0056b3;
+                            color: #ffffff !important;
+                            text-decoration: none;
+                            padding: 15px 35px;
+                            border-radius: 4px;
+                            margin: 25px 0;
+                            font-weight: 600;
+                            font-size: 16px;
+                            font-family: Arial, sans-serif;
+                            text-align: center;
+                            border: 1px solid #0056b3;
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                            transition: all 0.3s ease;
+                            mso-line-height-rule: exactly;
+                            line-height: 20px;
+                        }}
+                        .button-container {{
+                            text-align: center;
+                            padding: 20px 0;
+                        }}
+                        .footer {{
+                            text-align: center;
+                            font-size: 12px;
+                            color: #666666;
+                            margin-top: 20px;
+                        }}
+                        .warning {{
+                            font-size: 12px;
+                            color: #666666;
+                            margin-top: 20px;
+                            padding: 10px;
+                            border-left: 3px solid #ffd700;
+                            background-color: #fffef2;
+                        }}
+                    </style>
+                </head>
+                <body>
+                    <div class="email-container">
+                        <div class="header">
+                            <img src="https://www.bullbillion.com/static/bullbillion.png" alt="BullBillion Logo">
+                        </div>
+                        <div class="content">
+                            <h2>Password Reset Request</h2>
+                            <p>Hello,</p>
+                            <p>We received a request to reset your password for your BullBillion account. To proceed with the password reset, please click the button below:</p>
+                            
+                            <div class="button-container">
+                                <a href="{reset_url}" class="reset-button" target="_blank">
+                                    Reset Your Password
+                                </a>
+                            </div>
+                            
+                            <p>This link will expire in 24 hours for security reasons.</p>
+                            
+                            <div class="warning">
+                                <strong>Security Notice:</strong> If you didn't request this password reset, please ignore this email or contact our support team if you have concerns about your account's security.
+                            </div>
+                        </div>
+                        <div class="footer">
+                            <p>© {datetime.now().year} BullBillion. All rights reserved.</p>
+                            <p>This is an automated message, please do not reply to this email.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """,
+                "text": "Reset your password by visiting: " + reset_url,  # Plain text fallback
+            }
+        )
+        response.raise_for_status()
+        return {"message": "Your password reset link has been sent to your email, check your inbox."}
+    except Exception as e:
+        print(e)
+        log.error(f"Failed to send reset email: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send reset email"
+        )
+
+@router.put("/confirm-reset-password")
+async def confirm_password_reset(request: ConfirmResetPasswordRequest):
+    # Check MongoDB for reset token
+    user_mongo = users_collection.find_one({"reset_token": request.token})
+    
+    if not user_mongo or user_mongo.get('reset_token_expires') < datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+    
+    # Get user from SQLite
+    user_sqlite = Users.get_user_by_email(user_mongo['email'])
+    if not user_sqlite:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    try:
+        # Update password in SQLite using Auths model
+        hashed_password = get_password_hash(request.new_password)
+        success = Auths.update_user_password_by_id(user_sqlite.id, hashed_password)
+        
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update password"
+            )
+
+        # Clear reset token in MongoDB
+        users_collection.update_one(
+            {"email": user_mongo['email']},
+            {"$unset": {"reset_token": "", "reset_token_expires": ""}}
+        )
+        
+        return {"message": "Password successfully reset"}
+
+    except Exception as e:
+        log.error(f"Error resetting password: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to reset password"
+        )
