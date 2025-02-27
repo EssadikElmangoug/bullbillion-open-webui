@@ -635,18 +635,26 @@
 				>
 					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-xl-heavy"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.75 4.25C7.16015 4.25 4.25 7.16015 4.25 10.75C4.25 14.3399 7.16015 17.25 10.75 17.25C14.3399 17.25 17.25 14.3399 17.25 10.75C17.25 7.16015 14.3399 4.25 10.75 4.25ZM2.25 10.75C2.25 6.05558 6.05558 2.25 10.75 2.25C15.4444 2.25 19.25 6.05558 19.25 10.75C19.25 12.7369 18.5683 14.5645 17.426 16.0118L21.4571 20.0429C21.8476 20.4334 21.8476 21.0666 21.4571 21.4571C21.0666 21.8476 20.4334 21.8476 20.0429 21.4571L16.0118 17.426C14.5645 18.5683 12.7369 19.25 10.75 19.25C6.05558 19.25 2.25 15.4444 2.25 10.75Z" fill="currentColor"></path></svg>
 				</button>
-				<a
+				<button
 					id="new-chat-button"
 					class=" flex {$showSidebar
 						? 'md:flex'
 						: ''} cursor-pointer px-2 py-2 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-850 transition"
-					href="/"
 					aria-label="New Chat"
+					on:click={() => {
+						selectedChatId = null;
+						chatId.set('');
+						goto('/');
+
+						if ($mobile) {
+							showSidebar.set(false);
+						}
+					}}
 				>
 					<div class=" m-auto self-center">
 						<PencilSquare className=" size-5" strokeWidth="2" />
 					</div>
-				</a>
+				</button>
 			</div>
 		</div>
 
@@ -844,6 +852,19 @@
 		</div>
 
 		<div class="px-2">
+			<div class="flex flex-col border border-gray-200 dark:border-gray-800 rounded-xl bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 transition">
+				{#if !$isApp}
+					<a 
+						href="#"
+						target="_blank"
+						rel="noopener noreferrer" 
+						class="flex items-center gap-2 px-3 py-2 rounded-xl "
+					>
+						<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><path d="M725.333 1024H298.667a128 128 0 0 1-128-128V128a128 128 0 0 1 128-128h426.666a128 128 0 0 1 128 128v768a128 128 0 0 1-128 128zM298.667 85.333A42.667 42.667 0 0 0 256 128v768a42.667 42.667 0 0 0 42.667 42.667h426.666A42.667 42.667 0 0 0 768 896V128a42.667 42.667 0 0 0-42.667-42.667z" fill="currentColor"></path><path d="M469.33299999999997 853.333a42.667 42.667 0 1 0 85.334 0 42.667 42.667 0 1 0-85.334 0zM554.667 213.333h-85.334a42.667 42.667 0 0 1 0-85.333h85.334a42.667 42.667 0 0 1 0 85.333z" fill="currentColor"></path></svg>
+						<span class="self-center font-medium text-md">Get App</span>
+					</a>
+				{/if}
+			</div>
 			<div class="flex flex-col font-primary">
 				{#if $user !== undefined}
 					<UserMenu
@@ -867,7 +888,8 @@
 									alt="User profile"
 								/>
 							</div>
-							<div class=" self-center font-medium">{$user.name}</div>
+							<!-- <div class=" self-center font-medium">{$user.name}</div> -->
+							<div class=" self-center font-medium text-md">My Profile</div>
 						</button>
 					</UserMenu>
 				{/if}

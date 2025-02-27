@@ -46,6 +46,7 @@
 	import CommandLine from '../icons/CommandLine.svelte';
 	import { KokoroWorker } from '$lib/workers/KokoroWorker';
 	import AuthModal from '../auth/AuthModal.svelte';
+	import { user } from '$lib/stores';
 
 	const i18n = getContext('i18n');
 
@@ -56,7 +57,8 @@
 	export let stopResponse: Function;
 
 	export let autoScroll = false;
-	export let userType = 'guest';
+	export let userType = $user.role;
+	console.log('this is the user type', userType);
 	let showAuthModal = false;
 
 	export let atSelectedModel: Model | undefined = undefined;
@@ -75,6 +77,8 @@
 	export let imageGenerationEnabled = false;
 	export let webSearchEnabled = false;
 	export let codeInterpreterEnabled = false;
+
+	let videoGenerationEnabled = false;
 
 	$: onChange({
 		prompt,
@@ -96,7 +100,7 @@
 	let inputFiles;
 	let dragged = false;
 
-	let user = null;
+	// let user = null;
 	export let placeholder = '';
 
 	let visionCapableModels = [];
@@ -1158,11 +1162,10 @@
 													</Tooltip>
 												{/if}
 
-												{#if $config?.features?.enable_image_generation && ($_user.role === 'admin' || $_user?.permissions?.features?.image_generation)}
+												<!-- {#if $config?.features?.enable_image_generation && ($_user.role === 'admin' || $_user?.permissions?.features?.image_generation)}
 													<Tooltip content={$i18n.t('Generate an image')} placement="top">
 														<button
-															on:click|preventDefault={() =>
-																(imageGenerationEnabled = !imageGenerationEnabled)}
+															on:click|preventDefault={() => (imageGenerationEnabled = !imageGenerationEnabled)}
 															type="button"
 															class="px-1.5 @sm:px-2.5 py-1.5 flex gap-1.5 items-center text-sm rounded-full font-medium transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden {imageGenerationEnabled
 																? 'bg-gray-100 dark:bg-gray-500/20 text-gray-600 dark:text-gray-400'
@@ -1175,7 +1178,39 @@
 															>
 														</button>
 													</Tooltip>
-												{/if}
+												{/if} -->
+
+												<Tooltip content={$i18n.t('Generate an image')} placement="top">
+													<button
+														on:click|preventDefault={() => (imageGenerationEnabled = !imageGenerationEnabled)}
+														type="button"
+														class="px-1.5 @sm:px-2.5 py-1.5 flex gap-1.5 items-center text-sm rounded-full font-medium transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden {imageGenerationEnabled
+															? 'bg-gray-100 dark:bg-gray-500/20 text-gray-600 dark:text-gray-400'
+															: 'bg-transparent text-gray-600 dark:text-gray-300 border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 '}"
+													>
+														<Photo className="size-5" strokeWidth="1.75" />
+														<span
+															class="hidden @sm:block whitespace-nowrap overflow-hidden text-ellipsis translate-y-[0.5px] mr-0.5"
+															>{$i18n.t('Image')}</span
+														>
+													</button>
+												</Tooltip>
+
+												<Tooltip content={$i18n.t('Generate a video')} placement="top">
+													<button
+														on:click|preventDefault={() => (videoGenerationEnabled = !videoGenerationEnabled)}
+														type="button"
+														class="px-1.5 @sm:px-2.5 py-1.5 flex gap-1.5 items-center text-sm rounded-full font-medium transition-colors duration-300 focus:outline-hidden max-w-full overflow-hidden {videoGenerationEnabled
+															? 'bg-gray-100 dark:bg-gray-500/20 text-gray-600 dark:text-gray-400'
+															: 'bg-transparent text-gray-600 dark:text-gray-300 border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 '}"
+													>
+														<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1" width="18" height="18" viewBox="0 0 18 18" data-spm-anchor-id="5aebb161.2ef5001f.0.i16.14b05171Rfhqm6"><defs><clipPath id="master_svg0_453_02897/323_00977"><rect x="0" y="0" width="18" height="18" rx="0"></rect></clipPath></defs><g><g clip-path="url(#master_svg0_453_02897/323_00977)"><g><path d="M15.4690197265625,1.912445068359375L2.5314697265625,1.912445068359375Q2.2748207265625,1.912445068359375,2.0937697265625,2.093495068359375Q1.9127197265625,2.274546068359375,1.9127197265625,2.531195068359375L1.9127197265625,15.468745068359375Q1.9127197265625,15.725345068359376,2.0937697265625,15.906445068359375Q2.2748187265625,16.087445068359376,2.5314697265625,16.087445068359376L15.4690197265625,16.087445068359376Q15.7256197265625,16.087445068359376,15.9067197265625,15.906445068359375Q16.0877197265625,15.725345068359376,16.0877197265625,15.468745068359375L16.0877197265625,2.531195068359375Q16.0877197265625,2.274544068359375,15.9067197265625,2.093495068359375Q15.7256197265625,1.912445068359375,15.4690197265625,1.912445068359375ZM14.7096197265625,14.709345068359376L3.2908497265625,14.709345068359376L3.2908497265625,3.290575068359375L14.7096197265625,3.290575068359375L14.7096197265625,14.709345068359376ZM7.8097797265625,11.954145068359376L11.3148597265625,9.199615068359375Q11.3607597265625,9.163175068359376,11.3861197265625,9.110655068359375Q11.4114797265625,9.058145068359375,11.4114797265625,8.999815068359375Q11.4114797265625,8.941495068359375,11.3861197265625,8.888975068359375Q11.3607497265625,8.836455068359374,11.3148697265625,8.800035068359374L7.8097297265625,6.043735068359375Q7.6845697265625,5.945635068359375,7.5410897265625,6.014425068359375Q7.3970997265625,6.083465068359375,7.3970997265625,6.242695068359375L7.3970997265625,11.753435068359375Q7.3970997265625,11.912545068359375,7.5408097265625,11.982445068359375Q7.6844897265625,12.052345068359376,7.8097797265625,11.954145068359376ZM7.7750297265625,11.909875068359375L11.2800997265625,9.155385068359376C11.3035297265625,9.136785068359375,11.3224597265625,9.113135068359375,11.3354597265625,9.086195068359375C11.3484697265625,9.059255068359375,11.3552297265625,9.029735068359376,11.3552297265625,8.999815068359375C11.3552297265625,8.969905068359374,11.3484697265625,8.940375068359375,11.3354597265625,8.913445068359376C11.3224597265625,8.886505068359375,11.3035297265625,8.862855068359375,11.2800997265625,8.844255068359374L7.7750297265625,6.088005068359375C7.7226497265625,6.046955068359375,7.6603097265625,6.037245068359375,7.6045097265625,6.051085068359375C7.6602597265625,6.037335068359375,7.7224997265625,6.047065068359375,7.7750297265625,6.088005068359375L11.2800997265625,8.844255068359374C11.3033097265625,8.862905068359375,11.3222397265625,8.886555068359375,11.3354597265625,8.913445068359376C11.3482497265625,8.940435068359374,11.3550097265625,8.969955068359376,11.3552297265625,8.999815068359375C11.3550097265625,9.029785068359375,11.3482497265625,9.059315068359375,11.3354597265625,9.086195068359375C11.3222397265625,9.113185068359375,11.3033097265625,9.136845068359374,11.2800997265625,9.155385068359376L7.7750297265625,11.909875068359375C7.7514397265625,11.928245068359375,7.7260897265625,11.940245068359374,7.7002197265625,11.946745068359375C7.7261597265625,11.940245068359374,7.7515897265625,11.928245068359375,7.7750297265625,11.909875068359375Z" fill-rule="evenodd" fill="currentColor" fill-opacity="1"></path></g></g></g></svg>
+														<span
+															class="hidden @sm:block whitespace-nowrap overflow-hidden text-ellipsis translate-y-[0.5px] mr-0.5"
+															>{$i18n.t('Video')}</span
+														>
+													</button>
+												</Tooltip>
 
 												{#if $config?.features?.enable_code_interpreter && ($_user.role === 'admin' || $_user?.permissions?.features?.code_interpreter)}
 													<Tooltip content={$i18n.t('Execute code for analysis')} placement="top">

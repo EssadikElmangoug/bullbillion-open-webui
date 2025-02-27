@@ -63,8 +63,8 @@ log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MAIN"])
 
 # MongoDB Configuration
-# MONGODB_URI = "mongodb://mongodb:27017/"  # Update with your MongoDB URI
-MONGODB_URI = "mongodb://localhost:27017/"  # Update with your MongoDB URI
+MONGODB_URI = "mongodb://mongodb:27017/"  # Update with your MongoDB URI
+# MONGODB_URI = "mongodb://localhost:27017/"  # Update with your MongoDB URI
 MONGODB_DB_NAME = "bullbillion"
 
 try:

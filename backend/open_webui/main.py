@@ -343,8 +343,8 @@ from datetime import datetime, timedelta
 import secrets
 
 # MongoDB Configuration
-# MONGODB_URI = "mongodb://mongodb:27017/"  # Changed from localhost to container name
-MONGODB_URI = "mongodb://localhost:27017/"  # Changed from localhost to container name
+MONGODB_URI = "mongodb://mongodb:27017/"  # Changed from localhost to container name
+# MONGODB_URI = "mongodb://localhost:27017/"  # Changed from localhost to container name
 MONGODB_DB_NAME = "bullbillion"
 
 try:
@@ -823,9 +823,17 @@ async def inspect_websocket(request: Request, call_next):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://204.12.203.155:5173", "http://localhost:5173", "http://204.12.203.155:3000", "http://bullbillion.com", "https://bullbillion.com"],
+    allow_origins=[
+        "http://204.12.203.155:5173",
+        "http://localhost:5173",
+        "http://204.12.203.155:3000",
+        "http://bullbillion.com",
+        "https://bullbillion.com",
+        "http://www.bullbillion.com",
+        "https://www.bullbillion.com"
+    ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Explicitly list allowed methods
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -1487,48 +1495,6 @@ async def request_password_reset(request: ResetPasswordRequest):
 
 @app.post("/api/auth/confirm-reset-password")
 async def confirm_password_reset(request: ConfirmResetPasswordRequest):
-    # Check MongoDB for reset token
-    user_mongo = users_collection.find_one({"reset_token": request.token})
-    
-    if not user_mongo or user_mongo.get('reset_token_expires') < datetime.utcnow():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired reset token"
-        )
-    
-    # Get user from SQLite
-    user_sqlite = Users.get_user_by_email(user_mongo['email'])
-    if not user_sqlite:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-
-    try:
-        # Update password in SQLite using Auths model
-        hashed_password = get_password_hash(request.new_password)
-        success = Auths.update_user_password_by_id(user_sqlite.id, hashed_password)
-        
-        if not success:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to update password"
-            )
-
-        # Clear reset token in MongoDB
-        users_collection.update_one(
-            {"email": user_mongo['email']},
-            {"$unset": {"reset_token": "", "reset_token_expires": ""}}
-        )
-        
-        return {"message": "Password successfully reset"}
-
-    except Exception as e:
-        log.error(f"Error resetting password: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to reset password"
-        )
     # Check MongoDB for reset token
     user_mongo = users_collection.find_one({"reset_token": request.token})
     
