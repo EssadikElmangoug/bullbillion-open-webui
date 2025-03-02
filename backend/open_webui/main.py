@@ -809,7 +809,9 @@ app.add_middleware(
         "http://bullbillion.com",
         "https://bullbillion.com",
         "http://www.bullbillion.com",
-        "https://www.bullbillion.com"
+        "https://www.bullbillion.com",
+        "http://64.20.63.214:5173",
+        "http://64.20.63.214:3000"
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -1093,7 +1095,7 @@ async def get_app_config(request: Request):
     return {
         **({"onboarding": True} if onboarding else {}),
         "status": True,
-        "name": "BullBillion | Powered by AI. Supported by Human Experts.",
+        "name": "BullBillion | World's first AI, backed by HI -  Human Intelligence..",
         "version": VERSION,
         "default_locale": str(DEFAULT_LOCALE),
         "oauth": {

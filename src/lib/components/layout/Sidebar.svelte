@@ -856,12 +856,13 @@
 				{#if !$isApp}
 					<a 
 						href="#"
-						target="_blank"
 						rel="noopener noreferrer" 
 						class="flex items-center gap-2 px-3 py-2 rounded-xl "
 					>
-						<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="20" height="20"><path d="M725.333 1024H298.667a128 128 0 0 1-128-128V128a128 128 0 0 1 128-128h426.666a128 128 0 0 1 128 128v768a128 128 0 0 1-128 128zM298.667 85.333A42.667 42.667 0 0 0 256 128v768a42.667 42.667 0 0 0 42.667 42.667h426.666A42.667 42.667 0 0 0 768 896V128a42.667 42.667 0 0 0-42.667-42.667z" fill="currentColor"></path><path d="M469.33299999999997 853.333a42.667 42.667 0 1 0 85.334 0 42.667 42.667 0 1 0-85.334 0zM554.667 213.333h-85.334a42.667 42.667 0 0 1 0-85.333h85.334a42.667 42.667 0 0 1 0 85.333z" fill="currentColor"></path></svg>
-						<span class="self-center font-medium text-md">Get App</span>
+						<svg fill="currentColor" height="20" width="20" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 60 60" xml:space="preserve">
+							<path d="M30,1.5c-16.542,0-30,12.112-30,27c0,5.205,1.647,10.246,4.768,14.604c-0.591,6.537-2.175,11.39-4.475,13.689  c-0.304,0.304-0.38,0.769-0.188,1.153C0.276,58.289,0.625,58.5,1,58.5c0.046,0,0.093-0.003,0.14-0.01  c0.405-0.057,9.813-1.412,16.617-5.338C21.622,54.711,25.738,55.5,30,55.5c16.542,0,30-12.112,30-27S46.542,1.5,30,1.5z"/>
+						</svg>
+						<span class="self-center font-medium text-md">Human Assistant 24/7</span>
 					</a>
 				{/if}
 			</div>

@@ -2163,7 +2163,7 @@
 	}}
 />
 
-{#if userType !== 'guest'}
+<!-- {#if userType !== 'guest'}
 	<div class="absolute top-4 right-4 z-50">
 		<Tooltip content="BullBillion Services">
 			<button 
@@ -2191,4 +2191,4 @@
 			</button>
 		</Tooltip>
 	</div>
-{/if}
+{/if} -->
