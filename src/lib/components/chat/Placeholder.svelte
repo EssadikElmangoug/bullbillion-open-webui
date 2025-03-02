@@ -139,7 +139,7 @@
 			</div>
 
 			<div class="mt-0.5 px-2 text-base font-normal text-gray-500 dark:text-gray-400 text-center">
-				Powered by AI. Supported by Human Experts
+				World's first AI, backed by HI -  Human Intelligence.
 			</div>
 
 			<div class="flex mt-1 mb-2">

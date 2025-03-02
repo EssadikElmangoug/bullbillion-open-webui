@@ -20,6 +20,7 @@
 	import DocumentChartBar from '../icons/DocumentChartBar.svelte';
 	import Evaluations from './Settings/Evaluations.svelte';
 	import CodeInterpreter from './Settings/CodeInterpreter.svelte';
+	import AffiliateSettings from './AffiliateSettings.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -354,7 +355,7 @@
 
 		<button
 			class="px-0.5 py-1 min-w-fit rounded-lg flex-1 md:flex-none flex text-right transition {selectedTab ===
-			'db'
+			'Affiliate'
 				? ''
 				: ' text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'}"
 			on:click={() => {
@@ -443,7 +444,7 @@
 				}}
 			/>
 		{:else if selectedTab === 'Affiliate'}
-			<h1>Affiliate</h1>
+			<AffiliateSettings />
 		{/if}
 	</div>
 </div>

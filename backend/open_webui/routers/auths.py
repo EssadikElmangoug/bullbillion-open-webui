@@ -65,8 +65,8 @@ log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MAIN"])
 
 # MongoDB Configuration
-MONGODB_URI = "mongodb://mongodb:27017/"  # Update with your MongoDB URI
-# MONGODB_URI = "mongodb://localhost:27017/"  # Update with your MongoDB URI
+# MONGODB_URI = "mongodb://mongodb:27017/"
+MONGODB_URI = "mongodb://localhost:27017/"
 MONGODB_DB_NAME = "bullbillion"
 
 try:
@@ -74,8 +74,8 @@ try:
     db = mongo_client[MONGODB_DB_NAME]
     print("MongoDB connection successful")
 except Exception as e:
-    print(f"MongoDB connection error: {e}")
-    raise
+        print(f"MongoDB connection error: {e}")
+        raise
 
 users_collection = db.users
 users_collection.create_index("email", unique=True)
@@ -1080,3 +1080,52 @@ async def confirm_password_reset(request: ConfirmResetPasswordRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to reset password"
         )
+
+############################
+# Affiliate Programs
+############################
+
+class AffiliateProgram(BaseModel):
+    name: str
+    link: str
+
+@router.get("/affiliates")
+async def get_affiliates(user=Depends(get_current_user)):
+    """Get all affiliate programs for the current user"""
+    user_data = users_collection.find_one({"email": user.email})
+    if not user_data:
+        return {"affiliates": []}
+    
+    return {"affiliates": user_data.get("affiliates", [])}
+
+@router.post("/affiliates")
+async def add_affiliate(affiliate: AffiliateProgram, user=Depends(get_current_user)):
+    """Add a new affiliate program for the current user"""
+    result = users_collection.update_one(
+        {"email": user.email},
+        {"$push": {"affiliates": affiliate.dict()}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to add affiliate program"
+        )
+    
+    return {"success": True, "message": "Affiliate program added successfully"}
+
+@router.delete("/affiliates/{name}")
+async def delete_affiliate(name: str, user=Depends(get_current_user)):
+    """Delete an affiliate program by name"""
+    result = users_collection.update_one(
+        {"email": user.email},
+        {"$pull": {"affiliates": {"name": name}}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Affiliate program not found"
+        )
+    
+    return {"success": True, "message": "Affiliate program deleted successfully"}
