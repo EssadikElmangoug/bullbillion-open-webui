@@ -1,4 +1,5 @@
 import { WEBUI_API_BASE_URL } from '$lib/constants';
+import { auth } from '$lib/firebase';
 
 export const getAdminDetails = async (token: string) => {
 	let error = null;
@@ -83,6 +84,7 @@ export const updateAdminConfig = async (token: string, body: object) => {
 };
 
 export const getSessionUser = async (token: string) => {
+
 	let error = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/auths/`, {

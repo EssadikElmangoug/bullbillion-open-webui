@@ -34,6 +34,8 @@
 	import { getBackendConfig } from '$lib/apis';
 	import { getSessionUser } from '$lib/apis/auths';
 
+	import { auth } from '$lib/firebase';
+
 	import '../tailwind.css';
 	import '../app.css';
 

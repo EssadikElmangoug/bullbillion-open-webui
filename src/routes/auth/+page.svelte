@@ -13,6 +13,8 @@
 
 	import { generateInitialsImage, canvasPixelTest } from '$lib/utils';
 
+	import { auth, signInWithEmail, signUpWithEmail, signInWithGoogle } from '$lib/firebase';
+
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import OnBoarding from '$lib/components/OnBoarding.svelte';
 
@@ -39,7 +41,7 @@
 
 	const setSessionUser = async (sessionUser) => {
 		if (sessionUser) {
-			console.log(sessionUser);
+			console.log('sessionUser', sessionUser);
 			formMessage = { type: 'success', text: $i18n.t(`You're now logged in.`) };
 			if (sessionUser.token) {
 				localStorage.token = sessionUser.token;
@@ -55,26 +57,56 @@
 	};
 
 	const signInHandler = async () => {
-		const sessionUser = await userSignIn(email, password).catch((error) => {
-			const errorMessage = error.toLowerCase();
-			if (errorMessage.includes('invalid email or password')) {
-				formMessage = { type: 'error', text: $i18n.t('Invalid email or password') };
-			} else if (errorMessage.includes('account not found')) {
-				formMessage = { type: 'error', text: $i18n.t('Account not found') };
-			} else {
-				formMessage = { type: 'error', text: $i18n.t('Sign in failed. Please try again.') };
+		const firebaseUser = await signInWithEmail(email, password).catch(
+			(error) => {
+				const errorMessage = error.message.toLowerCase();
+				if (errorMessage.includes('user-not-found') || errorMessage.includes('wrong-password')) {
+					formMessage = { type: 'error', text: $i18n.t('Invalid email or password') };
+				} else {
+					formMessage = { type: 'error', text: $i18n.t('Sign in failed. Please try again.') };
+				}
+				return null;
 			}
-			return null;
-		});
+		);
+		await setSessionUser(firebaseUser);
 
-		if (sessionUser) {
-			formMessage = { type: 'success', text: $i18n.t('Successfully signed in') };
-			await setSessionUser(sessionUser);
-		}
+		// if (firebaseUser) {
+		// 	try {
+		// 		// Call your backend signin endpoint
+		// 		const response = await fetch(`${WEBUI_API_BASE_URL}/auths/signin`, {
+		// 			method: 'POST',
+		// 			headers: {
+		// 				'Content-Type': 'application/json',
+		// 			},
+		// 			body: JSON.stringify({
+		// 				email: email,
+		// 				password: password
+		// 			})
+		// 		});
+
+		// 		if (!response.ok) {
+		// 			const errorData = await response.json();
+		// 			throw new Error(errorData.detail || 'Failed to authenticate with backend');
+		// 		}
+
+		// 		const backendUser = await response.json();
+				
+		// 		formMessage = { type: 'success', text: $i18n.t('Successfully signed in') };
+				
+		// 		// Combine Firebase user with backend user data
+		// 		await setSessionUser(backendUser);
+		// 	} catch (error) {
+		// 		console.error('Backend signin error:', error);
+		// 		formMessage = { 
+		// 			type: 'error', 
+		// 			text: $i18n.t('Signed in with Firebase but failed to sync with backend. Please try again.') 
+		// 		};
+		// 	}
+		// }
 	};
 
 	const signUpHandler = async () => {
-		const sessionUser = await userSignUp(name, email, password, generateInitialsImage(name)).catch(
+		const firebaseUser = await signUpWithEmail(name, email, password).catch(
 			(error) => {
 				const errorMessage = error.toLowerCase();
 				if (errorMessage.includes('email already registered')) {
@@ -87,11 +119,46 @@
 				return null;
 			}
 		);
+		await setSessionUser(firebaseUser);
 
-		if (sessionUser) {
-			formMessage = { type: 'success', text: $i18n.t('Account created successfully') };
-			await setSessionUser(sessionUser);
-		}
+		// if (firebaseUser) {
+		// 	try {
+		// 		// Call your backend signup endpoint
+		// 		const response = await fetch(`${WEBUI_API_BASE_URL}/auths/signup`, {
+		// 			method: 'POST',
+		// 			headers: {
+		// 				'Content-Type': 'application/json',
+		// 			},
+		// 			body: JSON.stringify({
+		// 				email: email,
+		// 				password: password,
+		// 				name: name
+		// 			})
+		// 		});
+
+		// 		if (!response.ok) {
+		// 			const errorData = await response.json();
+		// 			throw new Error(errorData.detail || 'Failed to create user in backend');
+		// 		}
+
+		// 		const backendUser = await response.json();
+				
+		// 		formMessage = { type: 'success', text: $i18n.t('Account created successfully') };
+				
+		// 		// You might want to combine the Firebase user and backend user data
+		// 		await setSessionUser(backendUser);
+		// 	} catch (error) {
+		// 		console.error('Backend signup error:', error);
+				
+		// 		// Consider if you want to delete the Firebase user if backend creation fails
+		// 		// await deleteUser(firebaseUser.user);
+				
+		// 		formMessage = { 
+		// 			type: 'error', 
+		// 			text: $i18n.t('Account created in Firebase but failed to sync with backend. Please contact support.') 
+		// 		};
+		// 	}
+		// }
 	};
 
 	const ldapSignInHandler = async () => {
@@ -286,12 +353,18 @@
 
 			<div class="mt-6">
 				<button
-					class="flex justify-center items-center bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition w-full rounded-full font-medium text-sm py-2.5"
-					on:click={() => {
-						window.location.href = `${WEBUI_BASE_URL}/oauth/google/login`;
+					class="flex justify-center items-center bg-gray-700/5 hover:bg-gray-700/10 dark:bg-gray-100/5 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition rounded-full font-medium text-sm p-2.5"
+					on:click={async () => {
+						try {
+							const user = await signInWithGoogle();
+							await setSessionUser(user);
+						} catch (error) {
+							// Handle errors
+							console.error("Google sign-in failed:", error);
+						}
 					}}
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="size-6 mr-3">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="size-6">
 						<path
 							fill="#EA4335"
 							d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
@@ -306,7 +379,7 @@
 							d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
 						/><path fill="none" d="M0 0h48v48H0z" />
 					</svg>
-					<span>{$i18n.t('Continue with {{provider}}', { provider: 'Google' })}</span>
+					<!-- <span>{$i18n.t('Continue with {{provider}}', { provider: 'Google' })}</span> -->
 				</button>
 			</div>
 		{/if}

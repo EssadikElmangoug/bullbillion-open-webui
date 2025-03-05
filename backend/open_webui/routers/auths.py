@@ -59,6 +59,10 @@ from datetime import datetime, timedelta
 import secrets
 import requests
 
+import firebase_admin
+from firebase_admin import credentials, auth
+from fastapi.responses import JSONResponse
+
 router = APIRouter()
 
 log = logging.getLogger(__name__)
@@ -1129,3 +1133,253 @@ async def delete_affiliate(name: str, user=Depends(get_current_user)):
         )
     
     return {"success": True, "message": "Affiliate program deleted successfully"}
+
+
+############################
+# Google Auth
+############################
+
+# Initialize Firebase (add this near the top of the file after other initializations)
+try:
+    firebase_cred = credentials.Certificate("config/firebase_cred.json")
+    firebase_app = firebase_admin.initialize_app(firebase_cred)
+    print("Firebase initialization successful")
+except Exception as e:
+    print(f"Firebase initialization error: {e}")
+    # You might want to handle this differently based on your requirements
+
+class GoogleUserRequest(BaseModel):
+    user: dict
+
+@router.post("/google", response_model=SessionUserResponse)
+async def google_auth(request: Request, response: Response, auth_request: GoogleUserRequest):
+    try:
+        # Extract user info directly from the user object
+        user_data = auth_request.user
+        firebase_uid = user_data.get('uid')
+        email = user_data.get('email')
+        name = user_data.get('displayName', email)
+        profile_image_url = user_data.get('photoURL')
+        
+        # Check if email is verified
+        if not user_data.get('emailVerified', False):
+            raise HTTPException(400, detail="Email not verified with Google")
+        
+        # Verify the access token is present (optional additional security)
+        access_token = user_data.get('stsTokenManager', {}).get('accessToken')
+        if not access_token:
+            raise HTTPException(401, detail="Missing access token")
+            
+        # Check if user exists in our database
+        user = Users.get_user_by_email(email)
+        
+        if not user:
+            # Create new user if they don't exist
+            role = "admin" if Users.get_num_users() == 0 else request.app.state.config.DEFAULT_USER_ROLE
+            
+            # Generate a random password for the user (they'll use Google to sign in)
+            random_password = str(uuid.uuid4())
+            hashed = get_password_hash(random_password)
+            
+            user = Auths.insert_new_auth(
+                email=email,
+                password=hashed,
+                name=name,
+                profile_image_url=profile_image_url,
+                role=role
+            )
+            
+            if not user:
+                raise HTTPException(500, detail=ERROR_MESSAGES.CREATE_USER_ERROR)
+                
+            # Add the user to MongoDB
+            create_user(email)
+            
+            # Store the Firebase UID for future reference
+            users_collection.update_one(
+                {"email": email},
+                {"$set": {
+                    "firebase_uid": firebase_uid,
+                    "auth_provider": "google"
+                }}
+            )
+        
+        # Generate JWT token for our app
+        expires_delta = parse_duration(request.app.state.config.JWT_EXPIRES_IN)
+        expires_at = None
+        if expires_delta:
+            expires_at = int(time.time()) + int(expires_delta.total_seconds())
+            
+        token = create_token(
+            data={"id": user.id},
+            expires_delta=expires_delta,
+        )
+        
+        datetime_expires_at = (
+            datetime.datetime.fromtimestamp(expires_at, datetime.timezone.utc)
+            if expires_at
+            else None
+        )
+        
+        # Set the cookie token
+        response.set_cookie(
+            key="token",
+            value=token,
+            expires=datetime_expires_at,
+            httponly=True,
+            samesite=WEBUI_AUTH_COOKIE_SAME_SITE,
+            secure=WEBUI_AUTH_COOKIE_SECURE,
+        )
+        
+        user_permissions = get_permissions(
+            user.id, request.app.state.config.USER_PERMISSIONS
+        )
+        
+        return {
+            "token": token,
+            "token_type": "Bearer",
+            "expires_at": expires_at,
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
+            "profile_image_url": user.profile_image_url,
+            "permissions": user_permissions,
+        }
+        
+    except Exception as e:
+        log.error(f"Google authentication error: {e}")
+        raise HTTPException(500, detail=f"Authentication error: {str(e)}")
+
+
+############################
+# Email Verification
+############################
+
+class EmailVerificationRequest(BaseModel):
+    user: dict  # Changed to match the request format
+
+@router.post("/email", response_model=SessionUserResponse)
+async def verify_email(request: Request, response: Response, verification_request: EmailVerificationRequest):
+    try:
+        # Extract user info from the request
+        user_data = verification_request.user
+        
+        # Check if we have the necessary user data
+        if not user_data:
+            raise HTTPException(400, detail="Missing user data in request")
+            
+        firebase_uid = user_data.get('uid')
+        email = user_data.get('email')
+        name = user_data.get('displayName', email)
+        
+        # Check if email is verified with Firebase
+        if not user_data.get('emailVerified', False):
+            log.warning(f"Unverified email attempt: {email}")
+            # For now, we'll continue but you might want to add a restriction here
+            # raise HTTPException(400, detail="Email not verified with Firebase")
+        
+        # Verify the access token is present
+        access_token = user_data.get('stsTokenManager', {}).get('accessToken')
+        if not access_token and user_data.get('accessToken'):
+            access_token = user_data.get('accessToken')
+            
+        if not access_token:
+            raise HTTPException(401, detail="Missing access token")
+            
+        # Check if user exists in our database
+        user = Users.get_user_by_email(email)
+        
+        if not user:
+            # Create new user if they don't exist
+            role = "admin" if Users.get_num_users() == 0 else request.app.state.config.DEFAULT_USER_ROLE
+            
+            # Generate a random password for the user
+            random_password = str(uuid.uuid4())
+            hashed = get_password_hash(random_password)
+            
+            user = Auths.insert_new_auth(
+                email=email,
+                password=hashed,
+                name=name,
+                profile_image_url=user_data.get('profile_image_url'),
+                role=role
+            )
+            
+            if not user:
+                raise HTTPException(500, detail=ERROR_MESSAGES.CREATE_USER_ERROR)
+                
+            # Add the user to MongoDB
+            create_user(email)
+            
+            # Store the Firebase UID for future reference
+            users_collection.update_one(
+                {"email": email},
+                {"$set": {
+                    "firebase_uid": firebase_uid,
+                    "auth_provider": "firebase",
+                    "email_verified": user_data.get('emailVerified', False)
+                }}
+            )
+            
+            log.info(f"Created new user account for email: {email}")
+        else:
+            # Update existing user's Firebase UID if needed
+            users_collection.update_one(
+                {"email": email},
+                {"$set": {
+                    "firebase_uid": firebase_uid,
+                    "auth_provider": "firebase",
+                    "email_verified": user_data.get('emailVerified', False)
+                }}
+            )
+            
+            log.info(f"Updated existing user with email: {email}")
+        
+        # Generate JWT token for our app
+        expires_delta = parse_duration(request.app.state.config.JWT_EXPIRES_IN)
+        expires_at = None
+        if expires_delta:
+            expires_at = int(time.time()) + int(expires_delta.total_seconds())
+            
+        token = create_token(
+            data={"id": user.id},
+            expires_delta=expires_delta,
+        )
+        
+        datetime_expires_at = (
+            datetime.datetime.fromtimestamp(expires_at, datetime.timezone.utc)
+            if expires_at
+            else None
+        )
+        
+        # Set the cookie token
+        response.set_cookie(
+            key="token",
+            value=token,
+            expires=datetime_expires_at,
+            httponly=True,
+            samesite=WEBUI_AUTH_COOKIE_SAME_SITE,
+            secure=WEBUI_AUTH_COOKIE_SECURE,
+        )
+        
+        user_permissions = get_permissions(
+            user.id, request.app.state.config.USER_PERMISSIONS
+        )
+        
+        return {
+            "token": token,
+            "token_type": "Bearer",
+            "expires_at": expires_at,
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "role": user.role,
+            "profile_image_url": user.profile_image_url,
+            "permissions": user_permissions,
+        }
+        
+    except Exception as e:
+        log.error(f"Email verification error: {e}")
+        raise HTTPException(500, detail=f"Email verification error: {str(e)}")
+  
