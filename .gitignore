@@ -310,3 +310,4 @@ cypress/screenshots
 .vscode/settings.json
 build/backend/open_webui/config/firebase_cred.json
 backend/open_webui/config/firebase_cred.json
+backend/open_webui/config/firebase_cred.json
