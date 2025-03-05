@@ -308,4 +308,4 @@ dist
 cypress/videos
 cypress/screenshots
 .vscode/settings.json
-build/
+build/backend/open_webui/config/firebase_cred.json
