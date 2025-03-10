@@ -155,7 +155,8 @@
 				/>
 			</div>
 
-			<div>
+			<!-- add user on admin panel -->
+			<!-- <div>
 				<Tooltip content={$i18n.t('Add User')}>
 					<button
 						class=" p-2 rounded-xl hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-850 transition font-medium text-sm flex items-center space-x-1"
@@ -166,7 +167,7 @@
 						<Plus className="size-3.5" />
 					</button>
 				</Tooltip>
-			</div>
+			</div> -->
 		</div>
 	</div>
 </div>

@@ -1903,7 +1903,7 @@
 
 <div
 	class="h-screen max-h-[100dvh] transition-width duration-200 ease-in-out {$showSidebar
-		? '  md:max-w-[calc(100%-260px)]'
+		? 'md:max-w-[calc(100%-260px)]'
 		: ' '} w-full max-w-full flex flex-col relative {showAuthModal ? 'blur-sm' : ''}"
 	id="chat-container"
 >
@@ -1966,11 +1966,11 @@
 			/>
 		{/if}
 
-		<PaneGroup direction="horizontal" class="w-full h-full">
+		<PaneGroup direction={$mobile ? "vertical" : "horizontal"} class="w-full h-full">
 			<Pane defaultSize={50} class="h-full flex w-full relative">
 				{#if $banners.length > 0 && !history.currentId && !$chatId && selectedModels.length <= 1}
 					<div class="absolute top-12 left-0 right-0 w-full z-30">
-						<div class=" flex flex-col gap-1 w-full">
+						<div class="flex flex-col gap-1 w-full px-2 md:px-0">
 							{#each $banners.filter( (b) => (b.dismissible ? !JSON.parse(localStorage.getItem('dismissedBannerIds') ?? '[]').includes(b.id) : true) ) as banner}
 								<Banner
 									{banner}
@@ -1996,7 +1996,7 @@
 				<div class="flex flex-col flex-auto z-10 w-full @container">
 					{#if $settings?.landingPageMode === 'chat' || createMessagesList(history, history.currentId).length > 0}
 						<div
-							class=" pb-2.5 flex flex-col justify-between w-full flex-auto overflow-auto h-0 max-w-full z-10 scrollbar-hidden"
+							class="pb-2.5 flex flex-col justify-between w-full flex-auto overflow-auto h-0 max-w-full z-10 scrollbar-hidden"
 							id="messages-container"
 							bind:this={messagesContainerElement}
 							on:scroll={(e) => {
@@ -2005,7 +2005,7 @@
 									messagesContainerElement.clientHeight + 5;
 							}}
 						>
-							<div class=" h-full w-full flex flex-col">
+							<div class="h-full w-full flex flex-col">
 								<Messages
 									chatId={$chatId}
 									bind:history
@@ -2025,7 +2025,7 @@
 							</div>
 						</div>
 
-						<div class=" pb-[2rem]">
+						<div class="pb-[2rem] px-2 md:px-0">
 							<MessageInput
 								userType={userType}
 								{history}
@@ -2078,7 +2078,7 @@
 							</div>
 						</div>
 					{:else}
-						<div class="overflow-auto w-full h-full flex items-center">
+						<div class="overflow-auto w-full h-full flex items-center px-2 md:px-0">
 							<Placeholder
 								{history}
 								{selectedModels}
@@ -2120,30 +2120,59 @@
 				</div>
 			</Pane>
 
-			<ChatControls
-				bind:this={controlPaneComponent}
-				bind:history
-				bind:chatFiles
-				bind:params
-				bind:files
-				bind:pane={controlPane}
-				chatId={$chatId}
-				modelId={selectedModelIds?.at(0) ?? null}
-				models={selectedModelIds.reduce((a, e, i, arr) => {
-					const model = $models.find((m) => m.id === e);
-					if (model) {
-						return [...a, model];
-					}
-					return a;
-				}, [])}
-				{submitPrompt}
-				{stopResponse}
-				{showMessage}
-				{eventTarget}
-			/>
+			{#if !$mobile}
+				<ChatControls
+					bind:this={controlPaneComponent}
+					bind:history
+					bind:chatFiles
+					bind:params
+					bind:files
+					bind:pane={controlPane}
+					chatId={$chatId}
+					modelId={selectedModelIds?.at(0) ?? null}
+					models={selectedModelIds.reduce((a, e, i, arr) => {
+						const model = $models.find((m) => m.id === e);
+						if (model) {
+							return [...a, model];
+						}
+						return a;
+					}, [])}
+					{submitPrompt}
+					{stopResponse}
+					{showMessage}
+					{eventTarget}
+				/>
+			{:else if $showControls}
+				<div class="fixed inset-0 bg-black/50 z-40" on:click={() => showControls.set(false)}></div>
+				<div class="fixed bottom-0 left-0 right-0 z-50 max-h-[80vh] overflow-auto bg-white dark:bg-gray-800 rounded-t-xl shadow-lg">
+					<div class="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto my-2 max-w-16"></div>
+					<ChatControls
+						bind:this={controlPaneComponent}
+						bind:history
+						bind:chatFiles
+						bind:params
+						bind:files
+						bind:pane={controlPane}
+						chatId={$chatId}
+						modelId={selectedModelIds?.at(0) ?? null}
+						models={selectedModelIds.reduce((a, e, i, arr) => {
+							const model = $models.find((m) => m.id === e);
+							if (model) {
+								return [...a, model];
+							}
+							return a;
+						}, [])}
+						{submitPrompt}
+						{stopResponse}
+						{showMessage}
+						{eventTarget}
+						mobile={true}
+					/>
+				</div>
+			{/if}
 		</PaneGroup>
 	{:else if loading}
-		<div class=" flex items-center justify-center h-full w-full">
+		<div class="flex items-center justify-center h-full w-full">
 			<div class="m-auto">
 				<Spinner />
 			</div>
@@ -2162,33 +2191,3 @@
 		showAuthModal = false;
 	}}
 />
-
-<!-- {#if userType !== 'guest'}
-	<div class="absolute top-4 right-4 z-50">
-		<Tooltip content="BullBillion Services">
-			<button 
-				class="p-3 bg-gradient-to-r from-pink-500 to-pink-600 rounded-lg 
-				shadow-lg hover:from-pink-600 hover:to-pink-700 transition-all duration-300 ease-in-out
-				flex items-center justify-center group"
-				on:click={() => {
-					// Add your live chat widget opening logic here
-					window.openLiveChat?.();
-				}}
-			>
-				<svg 
-					focusable="false" 
-					aria-hidden="true" 
-					viewBox="0 0 28 32" 
-					width="22.4" 
-					height="25.6"
-					class="transform group-hover:scale-105 transition-transform"
-				>
-					<path 
-						fill="white" 
-						d="M28,32 C28,32 23.2863266,30.1450667 19.4727818,28.6592 L3.43749107,28.6592 C1.53921989,28.6592 0,27.0272 0,25.0144 L0,3.6448 C0,1.632 1.53921989,0 3.43749107,0 L24.5615088,0 C26.45978,0 27.9989999,1.632 27.9989999,3.6448 L27.9989999,22.0490667 L28,22.0490667 L28,32 Z M23.8614088,20.0181333 C23.5309223,19.6105242 22.9540812,19.5633836 22.5692242,19.9125333 C22.5392199,19.9392 19.5537934,22.5941333 13.9989999,22.5941333 C8.51321617,22.5941333 5.48178311,19.9584 5.4277754,19.9104 C5.04295119,19.5629428 4.46760991,19.6105095 4.13759108,20.0170667 C3.97913051,20.2124916 3.9004494,20.4673395 3.91904357,20.7249415 C3.93763774,20.9825435 4.05196575,21.2215447 4.23660523,21.3888 C4.37862552,21.5168 7.77411059,24.5386667 13.9989999,24.5386667 C20.2248893,24.5386667 23.6203743,21.5168 23.7623946,21.3888 C23.9467342,21.2215726 24.0608642,20.9827905 24.0794539,20.7254507 C24.0980436,20.4681109 24.0195551,20.2135019 23.8614088,20.0181333 Z"
-					/>
-				</svg>
-			</button>
-		</Tooltip>
-	</div>
-{/if} -->

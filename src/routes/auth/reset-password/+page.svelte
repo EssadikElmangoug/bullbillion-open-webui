@@ -3,7 +3,7 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { WEBUI_BASE_URL } from '$lib/constants';
-
+  import { sendPasswordResetEmail, auth } from '$lib/firebase';
   const i18n = getContext('i18n');
 
   let email = '';
@@ -17,54 +17,17 @@
     loading = true;
     error = '';
     try {
-      const response = await fetch(`${WEBUI_BASE_URL}/api/v1/auths/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email }),
-      });
+      const res = await sendPasswordResetEmail(auth, email);
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      message = data.message;
+      message = 'Email sent! please check your email inbox.';
       submitted = true;
-    } catch (err) {
-      error = err.message || 'An unexpected error occurred';
-    } finally {
-      loading = false;
-    }
-  }
-
-  async function handlePasswordReset() {
-    loading = true;
-    error = '';
-    try {
-      const response = await fetch(`${WEBUI_BASE_URL}/api/v1/auths/confirm-reset-password`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Allow-Origin': '*',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ token, new_password: newPassword }),
-      });
-
-      if (response.ok) {
-        goto('/auth');
-      } else {
-        const data = await response.json();
-        error = data.detail || 'Failed to reset password';
-      }
     } catch (err) {
       error = 'An unexpected error occurred';
     } finally {
-      loading = false;
+      loading = false;  
     }
   }
+
 </script>
 
 <div class="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">

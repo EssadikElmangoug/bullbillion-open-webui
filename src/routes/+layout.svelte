@@ -566,15 +566,17 @@
 
 {#if loaded}
 	{#if $isApp}
-		<div class="flex flex-row h-screen">
+		<div class="flex flex-col md:flex-row h-screen overflow-hidden">
 			<AppSidebar />
 
-			<div class="w-full flex-1 max-w-[calc(100%-4.5rem)]">
+			<div class="w-full flex-1 overflow-auto md:max-w-[calc(100%-4.5rem)]">
 				<slot />
 			</div>
 		</div>
 	{:else}
-		<slot />
+		<div class="h-screen overflow-hidden">
+			<slot />
+		</div>
 	{/if}
 {/if}
 
